@@ -1,0 +1,52 @@
+[
+  {
+    "id": "CLS-4999",
+    "className": "קייטנת קיץ",
+    "classCode": "CLS-4999",
+    "createdTeacher": "משה כהן",
+    "createdTeacherUsername": "moshe",
+    "assignedTracks": [
+      "car"
+    ],
+    "joinedStudents": [],
+    "createdAt": "2026-08-25T20:46:53.936Z"
+  },
+  {
+    "id": "CLS-9972",
+    "className": "כיתת אלופים",
+    "classCode": "CLS-9972",
+    "createdTeacher": "שמעון",
+    "createdTeacherUsername": "shimon",
+    "assignedTracks": [
+      "car"
+    ],
+    "joinedStudents": [],
+    "createdAt": "2026-08-25T20:49:53.223Z"
+  },
+  {
+    "id": "CLS-4141",
+    "className": "כיתה ט'",
+    "createdTeacher": "משה כהן",
+    "createdTeacherUsername": "moshe",
+    "classCode": "CLS-4141",
+    "assignedTracks": [
+      "car",
+      "turtle"
+    ],
+    "joinedStudents": [],
+    "createdAt": "2026-08-25T21:37:01.706Z"
+  },
+  {
+    "id": "CLS-2311",
+    "className": "כיתה חדשה",
+    "createdTeacher": "",
+    "createdTeacherUsername": "",
+    "classCode": "CLS-2311",
+    "assignedTracks": [
+      "car"
+    ],
+    "targetTrack": "car",
+    "joinedStudents": [],
+    "createdAt": "2026-09-27T19:31:26.080Z"
+  }
+]

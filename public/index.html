@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!-- Google Fonts: Assistant & Heebo (Modern, Clean Hebrew Typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>React App</title>
+    <!-- Suppress benign ResizeObserver notifications before Webpack error overlay loads -->
+    <script>
+      (function() {
+        var blockError = function(e) {
+          var msg = (e && (e.message || (e.reason && e.reason.message))) || '';
+          if (typeof msg === 'string' && (
+            msg.indexOf('ResizeObserver') !== -1 ||
+            msg.indexOf('undelivered notifications') !== -1
+          )) {
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            if (e.preventDefault) e.preventDefault();
+            return true;
+          }
+        };
+        window.addEventListener('error', blockError, true);
+        window.addEventListener('unhandledrejection', blockError, true);
+
+        var prevOnError = window.onerror;
+        window.onerror = function(msg) {
+          if (typeof msg === 'string' && (
+            msg.indexOf('ResizeObserver') !== -1 ||
+            msg.indexOf('undelivered notifications') !== -1
+          )) {
+            return true;
+          }
+          if (prevOnError) return prevOnError.apply(this, arguments);
+        };
+      })();
+    </script>
+    <!-- Official Espressif Web Serial ESP Flashing Library -->
+    <script src="https://unpkg.com/esptool-js@0.5.4/bundle.js"></script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>

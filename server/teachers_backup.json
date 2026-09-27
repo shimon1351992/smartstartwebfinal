@@ -1,0 +1,107 @@
+[
+  {
+    "id": 1,
+    "fullName": "המורה שמעון",
+    "username": "shimon",
+    "password": "123"
+  },
+  {
+    "id": 1787057239713,
+    "fullName": "שמעון יעיש",
+    "username": "shimon1351992",
+    "password": "1234",
+    "email": "shimon1351992@gmail.com",
+    "createdAt": "2026-08-18T12:47:19.713Z"
+  },
+  {
+    "id": "israel_user",
+    "fullName": "ישראל ישראלי",
+    "username": "israel_user",
+    "password": "123",
+    "email": "israel@example.com",
+    "role": "user",
+    "plan": "individual",
+    "createdAt": "2026-08-25T14:07:46.509Z"
+  },
+  {
+    "id": "moti",
+    "fullName": "מוטי שאול",
+    "username": "moti",
+    "password": "1234",
+    "email": "shimon1351992@gmail.com",
+    "role": "teacher",
+    "createdAt": "2026-08-25T14:44:34.927Z"
+  },
+  {
+    "id": "test_starter",
+    "fullName": "משתמש בסיסי",
+    "username": "test_starter",
+    "password": "123",
+    "email": "",
+    "role": "teacher",
+    "plan": "starter",
+    "tier": 1,
+    "planName": "מסלול בסיסי (מסלולים בלבד)",
+    "createdAt": "2026-08-25T15:01:50.281Z"
+  },
+  {
+    "id": "test_pro",
+    "fullName": "מורה פרו",
+    "username": "test_pro",
+    "password": "123",
+    "email": "",
+    "role": "teacher",
+    "plan": "pro",
+    "tier": 2,
+    "planName": "מסלול פרו (ניהול כיתות וסביבות פיתוח)",
+    "createdAt": "2026-08-25T15:01:51.728Z"
+  },
+  {
+    "id": "test_premium",
+    "fullName": "מנהל פרימיום",
+    "username": "test_premium",
+    "password": "123",
+    "email": "",
+    "role": "teacher",
+    "plan": "premium",
+    "tier": 3,
+    "planName": "מסלול פרימיום (הכל כולל יצירה ב-AI)",
+    "createdAt": "2026-08-25T15:01:52.770Z"
+  },
+  {
+    "id": "niv",
+    "fullName": "ניב סהר",
+    "username": "niv",
+    "password": "1234",
+    "email": "shimon1351992@gmail.com",
+    "role": "teacher",
+    "plan": "pro",
+    "tier": 2,
+    "planName": "מסלול פרו (ניהול כיתות וסביבות פיתוח)",
+    "createdAt": "2026-08-25T20:36:48.072Z"
+  },
+  {
+    "id": "moshe",
+    "fullName": "משה כהן",
+    "username": "moshe",
+    "password": "1234",
+    "email": "shimon1351992@gmail.com",
+    "role": "admin",
+    "plan": "premium",
+    "tier": 3,
+    "planName": "מסלול פרימיום (הכל כולל יצירה ב-AI)",
+    "createdAt": "2026-08-25T20:38:39.360Z"
+  },
+  {
+    "id": "1moshe",
+    "fullName": "משה",
+    "username": "1moshe",
+    "password": "1234",
+    "email": "shimon1351992@gmail.com",
+    "role": "user",
+    "plan": "starter",
+    "tier": 1,
+    "planName": "מסלול בסיסי (מסלולים בלבד)",
+    "createdAt": "2026-09-27T18:54:13.202Z"
+  }
+]
