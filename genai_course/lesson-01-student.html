@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>מפגש 01 — ממציאים עולם | מצב תלמיד</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--nav:#101828;--line:#e4e7ec;--accent:#6c4cff;--soft:#f0edff;--green:#ecfdf3;--yellow:#fffaeb}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+header{background:linear-gradient(135deg,#171b35,#34256e);color:white;padding:28px 20px}
+.wrap{max-width:1050px;margin:auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+.badge{display:inline-block;background:#ffffff18;border:1px solid #ffffff30;border-radius:999px;padding:6px 12px}
+h1{font-size:clamp(32px,6vw,58px);margin:12px 0 4px;line-height:1.05} h2{font-size:28px} h3{margin-top:0}
+.mode{display:flex;gap:8px}.mode a{color:white;text-decoration:none;border:1px solid #ffffff50;padding:9px 13px;border-radius:10px}.mode .active{background:white;color:#241a52;font-weight:bold}
+.progress-shell{position:sticky;top:0;background:#fff;z-index:10;border-bottom:1px solid var(--line);padding:10px 16px}
+.progress{max-width:1050px;margin:auto;display:flex;gap:6px;align-items:center}.bar{height:10px;background:#eaecf0;border-radius:20px;flex:1;overflow:hidden}.fill{height:100%;width:0;background:var(--accent);transition:.25s}.pct{font-weight:bold;min-width:44px}
+main{max-width:900px;margin:28px auto;padding:0 16px 80px}.step{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;margin:18px 0;box-shadow:0 8px 28px #1018280a}
+.num{display:inline-flex;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center;background:var(--accent);color:white;font-weight:bold;margin-left:8px}
+.mission{background:var(--soft);border:1px solid #d8d0ff}.tip{background:var(--yellow);border-right:5px solid #f5b700;padding:14px;border-radius:10px}.success{background:var(--green);padding:14px;border-radius:10px}
+label{font-weight:bold;display:block;margin:14px 0 6px} input,textarea,select{width:100%;padding:13px;border:1px solid #cfd4dc;border-radius:10px;font:inherit;background:white} textarea{min-height:90px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.promptbox{background:#101828;color:#f8fafc;border-radius:14px;padding:18px;white-space:pre-wrap;min-height:90px;direction:rtl}
+button{border:0;border-radius:10px;padding:11px 15px;font-weight:bold;cursor:pointer;font-size:15px}
+.stepnav{display:flex;justify-content:space-between;gap:10px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.stepnav button{background:#eef2f6;color:#1d2939}
+.step.completed{border-color:#86efac;box-shadow:0 0 0 2px #dcfce7 inset}
+.save-note{font-size:13px;color:var(--muted);margin-top:8px}
+.editprompt{min-height:120px;background:#101828;color:#fff;border-color:#101828;direction:rtl}
+.version-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;background:#fafafa}
+.sticky-actions{position:sticky;bottom:12px;display:flex;justify-content:center;gap:8px;z-index:8;margin:20px auto;width:max-content;max-width:100%;padding:8px;background:#ffffffdd;backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px}.primary{background:var(--accent);color:white}.secondary{background:#eef2f6;color:#1d2939}.done{background:#12b76a;color:white}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px} details{margin-top:14px;border:1px dashed #c8cdd5;border-radius:12px;padding:12px} summary{cursor:pointer;font-weight:bold}
+.checks label{font-weight:normal;display:flex;gap:10px;align-items:flex-start}.checks input{width:auto;margin-top:7px}
+.version{border-right:4px solid #d0d5dd;padding-right:14px;margin:14px 0}.footer{text-align:center;color:var(--muted);margin-top:30px}
+.toast{position:fixed;bottom:22px;left:22px;background:#101828;color:#fff;padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.step{padding:18px}header{padding:22px 16px}}
+@media print{.progress-shell,.mode,.actions button{display:none}body{background:white}.step{box-shadow:none;break-inside:avoid}}
+</style>
+<style id="qa3-nav-style">
+.qa3-nav{position:sticky;top:0;z-index:999;background:#fff;border-bottom:1px solid #e5e7eb;padding:9px 4%;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.qa3-nav a{color:#172033;text-decoration:none;background:#eef1f7;border-radius:999px;padding:7px 12px;font-weight:700}
+.qa3-nav .spacer{flex:1}
+</style><style id="v11-style">
+:root{--v11-nav-h:52px}.v11-progress{position:sticky;top:var(--v11-nav-h);z-index:997;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid #dfe5ef;padding:8px 4%;box-shadow:0 4px 16px rgba(15,23,42,.06)}.v11-progress-row{display:flex;align-items:center;gap:12px;max-width:1200px;margin:auto}.v11-track{height:9px;background:#e7eaf0;border-radius:99px;overflow:hidden;flex:1}.v11-fill{height:100%;width:0;background:linear-gradient(90deg,#7c3aed,#06b6d4);transition:width .25s}.v11-story,.v11-artifact,.v11-backpack{max-width:1200px;margin:22px auto;padding:22px;border:1px solid #e3e7ef;border-radius:22px;background:linear-gradient(135deg,#fff,#f6f8ff);box-shadow:0 12px 35px rgba(15,23,42,.06)}.v11-story h2,.v11-artifact h2,.v11-backpack h2{margin-top:0}.v11-episode{font-weight:800;color:#6d28d9}.v11-chips{display:flex;gap:8px;flex-wrap:wrap}.v11-chip{padding:7px 11px;border-radius:999px;background:#eef2ff;font-size:.9rem}.v11-present-btn{border:0;border-radius:999px;padding:8px 13px;font-weight:800;cursor:pointer;background:#111827;color:white}.v11-presenting .qa4-training,.v11-presenting .teacher-note,.v11-presenting [class*="rescue"],.v11-presenting [class*="checklist"]{display:none!important}.v11-presenting .v11-story,.v11-presenting .v11-artifact{font-size:1.18em}.v11-continue{display:none;margin:8px auto;max-width:1200px;padding:10px 14px;border-radius:14px;background:#ecfeff;border:1px solid #a5f3fc}.v11-continue.show{display:block}.v11-lock{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:20px}.v11-lock.open{display:flex}.v11-lock-card{width:min(420px,100%);background:white;border-radius:22px;padding:24px;box-shadow:0 24px 80px rgba(0,0,0,.25)}.v11-lock-card input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ccd2dd;border-radius:12px;font-size:1rem}.v11-lock-actions{display:flex;gap:8px;margin-top:12px}.v11-lock-actions button{padding:10px 14px;border:0;border-radius:10px;font-weight:800;cursor:pointer}.v11-lock-msg{min-height:1.4em;color:#b91c1c;font-weight:700}.v11-unit-link{display:inline-block;margin-top:10px;font-weight:800}.v11-presenting .qa3-nav{position:static}.v11-presenting .v11-progress{display:none}
+@media(max-width:700px){.v11-story,.v11-artifact,.v11-backpack{margin:14px 12px;padding:17px}.v11-progress{padding:7px 12px}.v11-progress-row{gap:8px}}
+
+/* V1.1 SKYLAND episode strip redesign */
+.v11-story{max-width:1200px;margin:14px auto 20px;padding:14px 16px;border:1px solid #dfe5ef;border-radius:18px;background:linear-gradient(135deg,#ffffff 0%,#f8f7ff 55%,#f0fbff 100%);box-shadow:0 8px 24px rgba(15,23,42,.055)}
+.v11-story .v11-episode{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:.78rem;letter-spacing:.02em;color:#6d28d9;font-weight:900}
+.v11-story-flow{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.15fr) 28px minmax(0,1fr);align-items:stretch;gap:8px;direction:rtl}
+.v11-story-step{min-width:0;padding:11px 13px;border-radius:14px;background:rgba(255,255,255,.78);border:1px solid #e8eaf2}
+.v11-story-step.is-today{background:#fff;border-color:#c4b5fd;box-shadow:0 5px 16px rgba(109,40,217,.08)}
+.v11-story-step h3{font-size:.84rem;margin:0 0 5px;color:#475569;font-weight:900}
+.v11-story-step.is-today h3{color:#6d28d9}
+.v11-story-step p{margin:0;font-size:.88rem;line-height:1.45;color:#334155}
+.v11-story-arrow{display:flex;align-items:center;justify-content:center;color:#7c3aed;font-size:1.35rem;font-weight:900;opacity:.8}
+.v11-story-footer{display:flex;justify-content:flex-end;margin-top:9px}
+.v11-story .v11-unit-link{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 10px;border-radius:999px;background:#f1f5f9;color:#475569;text-decoration:none;font-size:.78rem;font-weight:800}
+.v11-story .v11-unit-link:hover{background:#e9e5ff;color:#5b21b6}
+@media(max-width:760px){.v11-story{margin:10px 10px 16px;padding:12px}.v11-story-flow{grid-template-columns:1fr;gap:6px}.v11-story-arrow{height:16px;transform:rotate(90deg);font-size:1rem}.v11-story-step{padding:10px 12px}.v11-story-footer{justify-content:stretch}.v11-story .v11-unit-link{justify-content:center;width:100%;box-sizing:border-box}}
+</style><link href="assets/skyland-typography.css" rel="stylesheet"/>
+</head>
+<body class="lesson-page student-page"><nav class="qa3-nav"><span><b>מפגש 1 / 30</b></span><span class="spacer"></span><a href="lesson-01-teacher.html">👨‍🏫 למורה</a><a href="lesson-02-student.html">מפגש 2 ←</a></nav><div aria-label="התקדמות בשיעור" class="v11-progress"><div class="v11-progress-row"><strong>ההתקדמות שלי</strong><div class="v11-track"><div class="v11-fill"></div></div><span class="v11-pct">0%</span></div></div><div class="v11-continue">👋 חזרת לשיעור. ההתקדמות שלך מהמחשב הזה נשמרה — אפשר להמשיך מהמקום שבו עצרת.</div><section class="v11-story" id="skyland-story"><div class="v11-episode">🌎 SKYLAND Story Experience · יחידה 1</div><div class="v11-story-flow"><div class="v11-story-step"><h3>⏮ בפרק הקודם</h3><p>זהו הפרק הראשון: SKYLAND מתחיל כרעיון שעוד לא קיבל צורה.</p></div><div aria-hidden="true" class="v11-story-arrow">←</div><div class="v11-story-step is-today"><h3>● הפרק של היום</h3><p>SKYLAND עדיין לא קיים. היום המורה מדגים איך הופכים רעיון מעורפל לתיאור שאפשר לתת ל־Canva.</p></div><div aria-hidden="true" class="v11-story-arrow">←</div><div class="v11-story-step"><h3>בפרק הבא ⏭</h3><p>הרעיון של SKYLAND כבר קיים. עכשיו הוא מקבל מראה, מקומות וחוקים שחוזרים באופן עקבי.</p></div></div><div class="v11-story-footer"><a class="v11-unit-link" href="unit-01.html">🎬 לעמוד פתיחת יחידה 1</a></div></section>
+<header><div class="wrap">
+<div class="top"><span class="badge">יחידה 1 · CREATE YOUR WORLD · מפגש 01</span>
+<div class="mode"><a href="index.html">🏠 הקורס</a><a href="lesson-01-teacher.html">👨‍🏫 מצב מורה</a><a class="active" href="#">🧑‍🎨 מצב תלמיד</a></div></div>
+<h1>🌎 ממציאים עולם</h1>
+<p>היום תלמדו איך להפוך רעיון שיש לכם בראש לתמונה בעזרת Prompt מדויק.</p>
+</div></header>
+
+<main><section class="card" style="border:2px solid #7c3aed;background:#faf7ff"><h2>🔗 היום ממשיכים לבנות את אותו פרויקט</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px"><div><b>📦 מה כבר קיים?</b><p>אין — זהו מפגש הפתיחה של הפרויקט.</p></div><div><b>🎨 מה בונים היום בפועל ב־Canva?</b><p>תמונת עולם V1→V3 + WORLD CONCEPT CARD.</p></div><div><b>✅ מה חייב להיות בנוי בסוף?</b><p>לפחות תמונת עולם משופרת אחת ו־WORLD CONCEPT CARD שמור בפרויקט MY WORLD.</p></div><div><b>➡️ איך זה נכנס למפגש הבא?</b><p>במפגש 2 התמונה, הצבעים והסגנון הופכים ל־STYLE DNA ול־WORLD KIT.</p></div></div></section>
+<section class="step mission">
+<h2>🎯 המשימה שלכם</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> היום אתם מתחילים עולם חדש. קודם מחליטים מהו העולם, אחר כך מתארים אותו בצורה מדויקת, ורק אז עוברים ל־Canva כדי ליצור ולשפר אותו.</div>
+<p>המציאו עולם חדש, למדו לתאר אותו ל־AI, צרו כמה גרסאות ושפרו את ה־Prompt עד שהתמונה מתקרבת למה שדמיינתם.</p>
+<p><b>הנוסחה שלנו:</b> WHAT + WHERE + DETAILS + STYLE → GENERATE → COMPARE → IMPROVE</p>
+<details><summary>💡 רוצים לראות דוגמה?</summary><p><b>SKYLAND:</b> עיר על איים מרחפים מעל ים של עננים. הדוגמה כאן כדי להבין את השיטה — העולם שלכם צריך להיות שלכם.</p></details>
+<p class="save-note">💾 העבודה שתכתבו בעמוד נשמרת אוטומטית במחשב הזה.</p></section>
+<section class="step track" id="step1"><h2><span class="num">1</span>המציאו עולם</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> כתבו רעיון קצר לעולם שלכם. אל תנסו עדיין לכתוב Prompt מושלם — קודם צריך לדעת מה אתם רוצים ליצור.</div>
+<label>שם זמני לעולם</label><input id="world" placeholder="לדוגמה: SKYLAND"/>
+<label>מה מיוחד בעולם שלכם? כתבו משפט אחד.</label><textarea id="idea" placeholder="בעולם שלי..."></textarea>
+<div class="actions"><button class="done" onclick="complete(this)">✓ סיימתי שלב 1</button></div>
+</section>
+<section class="step track" id="step2"><h2><span class="num">2</span>בונים את ה־Prompt</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> הפכו את הרעיון לתיאור שה־AI יכול להבין: WHAT, WHERE, DETAILS ו־STYLE.</div>
+<div class="grid">
+<div><label>WHAT — מה אתם רוצים לראות?</label><textarea id="what" placeholder="למשל: עיר על איים מרחפים"></textarea></div>
+<div><label>WHERE — איפה זה נמצא?</label><textarea id="where" placeholder="למשל: מעל ים של עננים"></textarea></div>
+<div><label>DETAILS — אילו פרטים חייבים להופיע?</label><textarea id="details" placeholder="כתבו לפחות 3 פרטים"></textarea></div>
+<div><label>STYLE — איך התמונה צריכה להיראות?</label><textarea id="style" placeholder="סגנון, צבעים, תאורה, אווירה..."></textarea></div>
+</div>
+<div class="actions"><button class="primary" onclick="buildPrompt()">✨ הרכיבו לי את ה־Prompt</button></div>
+<h3>🤖 ה־Prompt שלי</h3><textarea aria-label="הפרומפט שלי" class="editprompt" id="prompt1">מלאו את ארבעת החלקים ולחצו על הכפתור.</textarea><div class="save-note">✏️ אפשר לערוך את ה־Prompt לפני שמעתיקים אותו ל־Canva. הטקסט נשמר אוטומטית בדפדפן.</div>
+<div class="actions"><button class="secondary" onclick="copyText('prompt1')">📋 העתק Prompt</button><button class="done" onclick="complete(this)">✓ סיימתי שלב 2</button></div>
+<details><summary>🆘 נתקעתי — הציגו דוגמה</summary><p><b>WHAT:</b> עיר על איים מרחפים<br/><b>WHERE:</b> מעל ים של עננים<br/><b>DETAILS:</b> גשרים, מגדלים לבנים וכחולים, צמחייה צבעונית<br/><b>STYLE:</b> תלת־ממדי מצויר, צבעוני, אור בוקר</p></details>
+</section>
+<section class="step track" id="step3"><h2><span class="num">3</span>צרו תמונה ב־Canva</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> עכשיו עוברים ל־Canva. העתיקו את ה־Prompt, צרו תמונה ושמרו גם את V1 כדי שתוכלו להשוות.</div>
+<p>העתיקו את ה־Prompt → עברו לכלי יצירת התמונות שהמורה מציג ב־Canva → צרו תמונה → חזרו לעמוד הזה.</p>
+<div class="tip"><b>אל תמחקו את התוצאה הראשונה.</b> גם אם היא לא מוצלחת — נצטרך אותה כדי לראות איך השתפרנו.</div>
+<div class="actions"><button class="secondary" onclick="copyText('prompt1')">📋 העתק שוב</button><button class="done" onclick="complete(this)">✓ יצרתי תמונה וחזרתי</button></div>
+</section>
+<section class="step track" id="step4"><h2><span class="num">4</span>בודקים את V1</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> הסתכלו על התמונה בלי למהר ליצור חדשה. בדקו מה הצליח ומה לא תואם למה שדמיינתם.</div>
+<div class="checks">
+<label><input type="checkbox"/> WHAT שלי מופיע בתמונה.</label>
+<label><input type="checkbox"/> WHERE ברור.</label>
+<label><input type="checkbox"/> הפרטים החשובים מופיעים.</label>
+<label><input type="checkbox"/> הסגנון והאווירה מתאימים.</label>
+</div>
+<label>מה AI עשה טוב?</label><textarea id="good"></textarea>
+<label>מה חסר או לא מתאים?</label><textarea id="missing"></textarea>
+<div class="actions"><button class="done" onclick="complete(this)">✓ בדקתי את V1</button></div>
+</section>
+<section class="step track" id="step5"><h2><span class="num">5</span>משפרים — KEEP + CHANGE + GOAL</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> בחרו מה שומרים, דבר אחד שמשנים ומה המטרה של השינוי. אחר כך צרו גרסה חדשה ב־Canva.</div>
+<p><b>משנים דבר אחד בכל פעם.</b> כך אפשר לדעת מה באמת גרם להבדל.</p>
+<div class="grid">
+<div><label>KEEP — מה נשאר?</label><textarea id="keep" placeholder="אני רוצה לשמור..."></textarea></div>
+<div><label>CHANGE — מה משתנה?</label><textarea id="change" placeholder="אני רוצה לשנות..."></textarea></div>
+</div>
+<label>GOAL — למה אני משנה את זה?</label><textarea id="goal" placeholder="המטרה שלי היא..."></textarea>
+<div class="actions"><button class="primary" onclick="buildImprove()">✨ בנו Prompt לשיפור</button></div>
+<h3>Prompt משופר</h3><textarea aria-label="פרומפט משופר" class="editprompt" id="prompt2">מלאו KEEP + CHANGE + GOAL.</textarea><div class="save-note">✏️ קראו את ה־Prompt, תקנו מילים אם צריך ורק אז העתיקו.</div>
+<div class="actions"><button class="secondary" onclick="copyText('prompt2')">📋 העתק Prompt משופר</button><button class="done" onclick="complete(this)">✓ יצרתי גרסה משופרת</button></div>
+</section>
+<section class="step track" id="step6"><h2><span class="num">6</span>משווים V1 → V2 → V3</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> הניחו את הגרסאות זו לצד זו ובדקו איזה שינוי באמת קירב אתכם למטרה.</div>
+<div class="version-card"><b>V1 — מה ביקשתי בהתחלה?</b><textarea id="v1note" placeholder="הדביקו/סכמו את ה־Prompt הראשון"></textarea></div>
+<div class="version-card"><b>V2 — מה שיניתי?</b><textarea id="v2note" placeholder="כתבו את השינוי הראשון"></textarea></div>
+<div class="version-card"><b>V3 — מה שיפרתי שוב?</b><textarea id="v3note" placeholder="אם יצרתם גרסה שלישית, כתבו מה השתנה"></textarea></div>
+<label>מה השתנה בתמונה אחרי ששיניתם את ה־Prompt?</label><textarea id="difference"></textarea>
+<label>איזו גרסה מייצגת טוב יותר את העולם שלכם — ולמה?</label><textarea id="choice"></textarea>
+<div class="success"><b>בדיקת הצלחה:</b> אם אתם יכולים לומר “שיניתי את המילים האלה ב־Prompt ולכן קיבלתי את ההבדל הזה” — הבנתם את לב השיעור.</div>
+<div class="actions"><button class="done" onclick="complete(this)">✓ סיימתי השוואה</button></div>
+</section>
+<section class="step track" id="step7"><h2><span class="num">7</span>בונים WORLD CONCEPT CARD</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> רכזו את ההחלטות החשובות בכרטיס אחד שישמש אתכם במפגש הבא.</div>
+<p>באותו פרויקט Canva צרו כרטיס מסכם עם:</p>
+<div class="checks">
+<label><input type="checkbox"/> שם העולם</label><label><input type="checkbox"/> התמונה שבחרתי</label>
+<label><input type="checkbox"/> משפט שמתאר את העולם</label><label><input type="checkbox"/> WHAT + WHERE + DETAILS + STYLE</label>
+<label><input type="checkbox"/> ה־Prompt שעבד הכי טוב</label><label><input type="checkbox"/> מה שיניתי ולמה</label>
+</div>
+<details><summary>👁 מה צריך להיות בכרטיס? הציגו דוגמה</summary><p><b>SKYLAND</b><br/>עיר עתידנית על איים מרחפים מעל ים של עננים.<br/><b>WHAT:</b> עיר על איים מרחפים · <b>WHERE:</b> מעל עננים · <b>DETAILS:</b> גשרים, מגדלים, צמחייה · <b>STYLE:</b> 3D מצויר וצבעוני.</p></details>
+<div class="actions"><button class="done" onclick="complete(this)">✓ הכרטיס שלי מוכן</button></div>
+</section>
+<section class="step track" id="step8"><h2>🏆 אתגר הבוס</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> נסו שינוי מאתגר בלי לאבד את הזהות של העולם שכבר בניתם.</div>
+<p>צרו Remix שמשנה <b>מאפיין אחד</b> — למשל שעה ביום, מזג אוויר או סגנון — אבל עדיין אפשר לזהות שזה העולם שלכם.</p>
+<label>מה אני שומר?</label><input id="bossKeep"/>
+<label>מה אני משנה?</label><input id="bossChange"/>
+<p><b>Super Boss:</b> נסו לכתוב Prompt קצר יותר ששומר על אותה זהות. אילו מילים הן Must Have?</p>
+<div class="actions"><button class="done" onclick="complete(this)">🏆 השלמתי את האתגר</button></div>
+</section>
+<section class="step"><h2>💾 לפני שמסיימים</h2><div class="tip" style="margin:10px 0"><b>💡 מה עושים עכשיו?</b> ודאו שהתמונה המשופרת וה־WORLD CONCEPT CARD שמורים ונגישים למפגש הבא.</div>
+<div class="checks"><label><input type="checkbox"/> שמרתי את התמונות והגרסאות.</label><label><input type="checkbox"/> WORLD CONCEPT CARD נמצא בפרויקט שלי.</label><label><input type="checkbox"/> אני יודע להסביר שינוי שעשיתי ב־Prompt.</label></div>
+<p class="success"><b>במפגש הבא:</b> נפתח את העולם שיצרתם היום ונמשיך לבנות אותו. אל תפתחו פרויקט חדש.</p>
+</section>
+<div class="sticky-actions"><button class="secondary" onclick="jump(-1)">→ הקודם</button><button class="primary" onclick="jump(1)">הבא ←</button></div>
+<div class="footer">Canva AI &amp; Web Creators · Student Workspace · מפגש 01</div>
+</main>
+<div class="toast" id="toast">הועתק ✓</div>
+<script>
+const ids=['world','idea','what','where','details','style','good','missing','keep','change','goal','difference','choice','bossKeep','bossChange','v1note','v2note','v3note','prompt1','prompt2'];
+ids.forEach(id=>{const e=document.getElementById(id);if(e){const saved=localStorage.getItem('lesson01_'+id);if(saved!==null)e.value=saved;e.addEventListener('input',()=>localStorage.setItem('lesson01_'+id,e.value));}});
+function v(id){return (document.getElementById(id)?.value||'').trim()}
+function buildPrompt(){let parts=[v('what'),v('where'),v('details'),v('style')].filter(Boolean);let t=parts.join(', ')+(parts.length?'.':'');document.getElementById('prompt1').value=t;localStorage.setItem('lesson01_prompt1',t)}
+function buildImprove(){let t=`שמור על: ${v('keep')}. שנה: ${v('change')}. המטרה: ${v('goal')}.`;document.getElementById('prompt2').value=t;localStorage.setItem('lesson01_prompt2',t)}
+function copyText(id){let e=document.getElementById(id),t=('value' in e?e.value:e.textContent);navigator.clipboard.writeText(t).then(()=>{let x=document.getElementById('toast');x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1200)})}
+function complete(btn){let sec=btn.closest('.track');let id=sec?.id||'';let done=!btn.classList.contains('isdone');btn.classList.toggle('isdone',done);sec?.classList.toggle('completed',done);btn.textContent=done?'✓ הושלם':'✓ סיימתי את השלב';if(id)localStorage.setItem('lesson01_done_'+id,done?'1':'0');update()}
+document.querySelectorAll('.track').forEach(sec=>{let btn=sec.querySelector('.done'),done=localStorage.getItem('lesson01_done_'+sec.id)==='1';if(done&&btn){btn.classList.add('isdone');sec.classList.add('completed');btn.textContent='✓ הושלם'}});
+function update(){let a=[...document.querySelectorAll('.track .done')],n=a.filter(x=>x.classList.contains('isdone')).length,p=a.length?Math.round(n/a.length*100):0;document.querySelector('.v11-fill').style.width=p+'%';document.querySelector('.v11-pct').textContent=p+'%'}
+let current=1;
+function jump(dir){current=Math.min(8,Math.max(1,current+dir));document.getElementById('step'+current)?.scrollIntoView({behavior:'smooth',block:'start'})}
+update();
+</script>
+<section class="v11-backpack"><h2>🎒 SKYLAND Backpack · מה כבר בנינו?</h2><div class="v11-chips"><span class="v11-chip">✓ WORLD CONCEPT CARD</span></div><p>כל התוצרים שנצברו עד עכשיו במסע.</p></section><section class="v11-artifact"><div class="v11-episode">📦 התוצר של הפרק</div><h2>כרטיס קונספט לעולם (WORLD CONCEPT CARD)</h2><p>התוצר הזה מצטרף ל־SKYLAND וישמש כחומר גלם בפרק הבא: WORLD KIT.</p></section><div aria-label="כניסה למצב מורה" aria-modal="true" class="v11-lock" role="dialog"><div class="v11-lock-card"><h2>🔒 מצב מורה</h2><p>הזינו את סיסמת המורה כדי לעבור לעמוד המדריך.</p><input autocomplete="off" class="v11-lock-input" inputmode="numeric" placeholder="סיסמת מורה" type="password"/><div class="v11-lock-msg"></div><div class="v11-lock-actions"><button class="v11-lock-ok">כניסה</button><button class="v11-lock-cancel">ביטול</button></div></div></div><script id="v11-student-js">(()=>{const KEY='v11-progress-01',PASSWORD='231284';const nav=document.querySelector('.qa3-nav');function navH(){document.documentElement.style.setProperty('--v11-nav-h',(nav?nav.offsetHeight:0)+'px')}navH();addEventListener('resize',navH);const candidates=[...document.querySelectorAll('input[type="checkbox"], [data-save]')];function calc(){let done=0,total=candidates.length;if(total)done=candidates.filter(el=>el.type==='checkbox'?el.checked:String(el.value||'').trim().length>0).length;let pct=total?Math.round(done/total*100):Number(localStorage.getItem(KEY)||0);document.querySelector('.v11-fill').style.width=pct+'%';document.querySelector('.v11-pct').textContent=pct+'%';localStorage.setItem(KEY,pct);if(pct>0)document.querySelector('.v11-continue').classList.add('show')}candidates.forEach(el=>{el.addEventListener('input',calc);el.addEventListener('change',calc)});calc();let target='';const modal=document.querySelector('.v11-lock'),inp=modal.querySelector('.v11-lock-input'),msg=modal.querySelector('.v11-lock-msg');document.querySelectorAll('a[href*="-teacher.html"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();target=a.href;msg.textContent='';inp.value='';modal.classList.add('open');setTimeout(()=>inp.focus(),50)}));function close(){modal.classList.remove('open');target=''}modal.querySelector('.v11-lock-cancel').onclick=close;modal.querySelector('.v11-lock-ok').onclick=()=>{if(inp.value===PASSWORD)location.href=target;else msg.textContent='הסיסמה אינה נכונה. נסו שוב.'};inp.addEventListener('keydown',e=>{if(e.key==='Enter')modal.querySelector('.v11-lock-ok').click();if(e.key==='Escape')close()});modal.addEventListener('click',e=>{if(e.target===modal)close()})})();</script><script src="assets/skyland-hebrew-ui.js"></script>
+</body></html>

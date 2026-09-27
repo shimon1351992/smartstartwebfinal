@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>SKYLAND · יחידה 2</title>
+<style>
+*{box-sizing:border-box}
+:root{--accent:#ec4899;--accent-soft:#ec489922;--bg:#edf4ff;--text:#122033;--muted:#4b5b73;--card:#ffffffdd;--border:#d9e2f1;--shadow:0 18px 50px rgba(15,23,42,.10)}
+body{margin:0;font-family:"Heebo","Rubik","Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#eff5ff 0%,#f8fbff 45%,#eef4fb 100%);color:var(--text)}
+a{color:inherit}
+.hero{position:relative;min-height:400px;padding:34px 22px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04)),url('assets/skyland-story-unit-02.svg') center center/cover no-repeat}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(246,250,255,.78) 0%,rgba(246,250,255,.64) 36%,rgba(246,250,255,.16) 100%)}
+.hero-card{position:relative;z-index:1;width:min(1040px,100%);padding:24px 28px;border-radius:30px;background:rgba(255,255,255,.64);border:1px solid rgba(255,255,255,.75);backdrop-filter:blur(10px);box-shadow:0 24px 60px rgba(12,27,61,.12)}
+.kicker{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.72);border:1px solid rgba(18,32,51,.08);font-size:14px;font-weight:900;color:#334155}
+.hero h1{margin:16px 0 8px;font-size:clamp(1.9rem,4vw,3.25rem);line-height:1.03;letter-spacing:-.035em;font-family:"Rubik","Heebo","Arial Black",Arial,sans-serif}
+.hero-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:18px 28px;align-items:center}
+.hook{font-size:clamp(1.06rem,2vw,1.42rem);font-weight:900;color:#1f2f49;line-height:1.5}
+.desc{margin:0;max-width:760px;font-size:1.02rem;line-height:1.8;color:#334155;background:rgba(255,255,255,.48);border:1px solid rgba(148,163,184,.20);border-radius:18px;padding:14px 16px}
+.story-tags{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:2px}
+.story-tags span{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.74);border:1px solid #dbe6f5;font-weight:800;color:#314055}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 56px}
+.journey-card,.hub-card,.nav-card{background:white;border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow)}
+.journey-card{margin-top:-40px;position:relative;z-index:2;padding:18px 20px}
+.section-title{margin:0 0 6px;font-size:28px}
+.section-sub{margin:0 0 18px;color:var(--muted);line-height:1.7}
+.map{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.journey-step{position:relative;display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center;min-height:92px;padding:12px;border-radius:20px;border:1px solid #e2e8f0;background:linear-gradient(180deg,#fbfdff,#f2f7ff);text-align:center;color:#475569}
+.journey-step span{font-size:1.6rem}
+.journey-step b{font-size:14px;line-height:1.35}
+.journey-step small{font-size:12px;color:#64748b}
+.journey-step.current{background:linear-gradient(135deg,var(--accent),#ffffff 180%);color:#fff;border-color:transparent;box-shadow:0 14px 34px rgba(0,0,0,.12)}
+.journey-step.current small{color:#eff9ff}
+.hub-card{margin-top:18px;padding:20px}
+.hub-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+.hub-head h2{margin:0;font-size:30px} .hub-head p{margin:6px 0 0;color:var(--muted);line-height:1.7}
+.tab-help{margin:0 0 8px;color:#64748b;font-size:14px;font-weight:800;text-align:center}.lesson-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;position:sticky;top:0;z-index:10;padding:10px;border-radius:22px;background:rgba(241,245,255,.94);backdrop-filter:blur(10px);border:1px solid #d9e2f1;box-shadow:0 14px 30px rgba(15,23,42,.06)}
+.lesson-tab{min-height:104px;border:1px solid #d7e3f3;border-radius:20px;background:#fff;color:#0f172a;padding:11px 10px;cursor:pointer;display:grid;grid-template-columns:auto auto;grid-template-areas:'num icon' 'title title';gap:6px;align-content:center;text-align:right;transition:.2s ease;box-shadow:0 8px 20px rgba(15,23,42,.05)}
+.lesson-tab:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.08)}
+.lesson-tab.active{background:linear-gradient(135deg,var(--accent),#7dd3fc 180%);border-color:transparent;color:#fff;box-shadow:0 14px 32px rgba(37,99,235,.20)}
+.lesson-tab .tab-num{grid-area:num;background:rgba(255,255,255,.22);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;font-weight:900}
+.lesson-tab.active .tab-num{background:rgba(255,255,255,.24)}
+.tab-icon{grid-area:icon;font-size:1.65rem;justify-self:end} .lesson-tab strong{grid-area:title;font-size:.95rem;line-height:1.25}
+.lesson-stage{margin-top:14px;background:#fff;border-radius:24px;overflow:hidden;border:1px solid #dbe3f0;box-shadow:0 18px 50px rgba(15,23,42,.08)}
+.lesson-stage-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 16px;background:#f8fbff;border-bottom:1px solid #dbe3f0}
+.lesson-stage-top div:first-child{display:flex;flex-direction:column;gap:4px} .lesson-stage-top small{color:#64748b}
+.stage-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.stage-actions button,.stage-actions a{border:1px solid #dbe4f2;background:#fff;color:#1e3a8a;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer} .stage-actions button:hover,.stage-actions a:hover{background:#f1f5ff}.stage-actions a{text-decoration:none}
+#lessonFrame{display:block;width:100%;height:1200px;border:0;background:#fff}
+.nav-card{margin-top:20px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.nav-card a{text-decoration:none;padding:10px 14px;border-radius:14px;background:#f4f7ff;border:1px solid #dbe4f2;font-weight:800}
+.nav-card a.primary{background:linear-gradient(135deg,var(--accent),#7dd3fc 180%);color:white;border-color:transparent}
+@media(max-width:980px){.hero-layout{grid-template-columns:1fr}.story-tags{justify-content:flex-start}.map{grid-template-columns:repeat(3,minmax(0,1fr))}.lesson-tabs{grid-template-columns:repeat(2,minmax(0,1fr));position:relative}#lessonFrame{height:1040px}}
+@media(max-width:640px){.hero{min-height:420px;padding:18px 12px}.hero-card{padding:20px 18px;border-radius:22px}.journey-card{margin-top:-36px;padding:16px}.section-title{font-size:24px}.hub-head h2{font-size:26px}.map{grid-template-columns:repeat(2,minmax(0,1fr))}.lesson-stage-top,.hub-head{flex-direction:column;align-items:flex-start}.lesson-tab{min-height:102px}#lessonFrame{height:980px}}
+</style>
+
+<link href="assets/skyland-typography.css" rel="stylesheet"/>
+<style id="v11-unit-visual-polish">
+body.unit-page{background:linear-gradient(180deg,#e9e6e3 0%,#f8f6f4 46%,#eef1f4 100%)!important;color:#1d2735}
+.unit-page .hero{min-height:620px!important;padding:54px 28px 96px!important;background-image:linear-gradient(90deg,rgba(15,13,20,.60) 0%,rgba(15,13,20,.38) 46%,rgba(15,13,20,.15) 100%),url('assets/skyland-showcase-unit-02.svg')!important;background-size:cover!important;background-position:center!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.unit-page .hero::before{background:linear-gradient(180deg,rgba(255,220,175,.05) 0%,rgba(18,15,22,.02) 68%,rgba(233,230,227,.78) 100%)!important}
+.unit-page .hero-card{width:min(1040px,100%)!important;padding:0!important;border-radius:0!important;background:transparent!important;border:0!important;backdrop-filter:none!important;box-shadow:none!important;color:white!important;text-align:right!important}
+.unit-page .kicker{display:block!important;padding:0!important;background:none!important;border:0!important;color:#f8fafc!important;font-size:14px!important;font-weight:650!important;opacity:.9!important;margin-bottom:12px!important;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.unit-page .hero-title-row{display:block!important;margin:0!important}
+.unit-page .hero-title-row h1{margin:0 0 16px!important;max-width:760px!important;color:#fff!important;font-size:clamp(2.2rem,4.8vw,4.25rem)!important;line-height:1.02!important;font-weight:760!important;letter-spacing:0!important;text-shadow:0 4px 22px rgba(0,0,0,.36)}
+.unit-page .hero-copy-grid{display:grid!important;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)!important;gap:18px 34px!important;align-items:start!important;margin-top:0!important;max-width:960px!important}
+.unit-page .hook{color:#fff!important;font-size:clamp(1.08rem,2vw,1.5rem)!important;line-height:1.6!important;font-weight:720!important;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.unit-page .desc{color:#f6f8fb!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;font-size:1.04rem!important;line-height:1.8!important;text-shadow:0 2px 10px rgba(0,0,0,.34)}
+.unit-page .story-tags{justify-content:flex-start!important;margin-top:18px!important}
+.unit-page .story-tags span{background:rgba(16,18,24,.30)!important;border:1px solid rgba(255,255,255,.20)!important;color:#fff!important;padding:8px 12px!important;font-weight:650!important;backdrop-filter:blur(5px)}
+.unit-page .wrap{max-width:1220px!important}
+.unit-page .journey-card,.unit-page .hub-card,.unit-page .nav-card{background:#fffdfb!important;border-color:#ddd7d2!important;box-shadow:0 16px 45px rgba(44,38,34,.08)!important}
+.unit-page .journey-card{margin-top:-62px!important;padding:18px 20px!important}
+.unit-page .section-title{font-size:25px!important;margin-bottom:4px!important} .unit-page .section-sub,.unit-page .hub-head p{color:#665f59!important}
+.unit-page .map{gap:8px!important} .unit-page .journey-step{min-height:84px!important;padding:10px!important;background:linear-gradient(180deg,#fff,#f8f5f2)!important;border-color:#e5ded8!important;color:#554f4a!important}
+.unit-page .journey-step span{font-size:1.35rem!important} .unit-page .journey-step b{font-size:13px!important} .unit-page .journey-step.current{background:linear-gradient(135deg,var(--accent),#51435e)!important;color:#fff!important;box-shadow:0 12px 28px rgba(49,42,61,.16)!important}
+.unit-page .journey-step.current small{color:#f6f0ff!important}
+.unit-page .lesson-tabs{background:rgba(245,242,239,.96)!important;border-color:#dfd9d3!important;box-shadow:0 12px 28px rgba(49,42,36,.07)!important}
+.unit-page .lesson-tab{min-height:96px!important;background:#fffdfb!important;border-color:#e2dcd6!important;box-shadow:0 7px 18px rgba(49,42,36,.06)!important;grid-template-columns:auto 1fr!important;grid-template-areas:'icon label' 'title title'!important;text-align:center!important}
+.unit-page .lesson-tab.active{background:linear-gradient(135deg,var(--accent),#5b5367 155%)!important;color:white!important;box-shadow:0 14px 30px rgba(56,48,68,.18)!important}
+.unit-page .tab-icon{grid-area:icon!important;justify-self:end!important;font-size:1.45rem!important} .unit-page .tab-label{grid-area:label!important;justify-self:start!important;align-self:center!important;font-size:12px!important;font-weight:650!important;opacity:.70!important;background:none!important;width:auto!important;height:auto!important;border-radius:0!important}
+.unit-page .lesson-tab strong{grid-area:title!important;font-size:.93rem!important;line-height:1.32!important}
+.unit-page .lesson-stage{border-color:#ddd7d2!important;box-shadow:0 18px 48px rgba(49,42,36,.08)!important} .unit-page .lesson-stage-top{background:#fbf9f7!important;border-color:#e5ded8!important}
+@media(max-width:760px){.unit-page .hero{min-height:540px!important;padding:34px 16px 76px!important;background-position:center!important}.unit-page .hero-copy-grid{grid-template-columns:1fr!important;gap:12px!important}.unit-page .hero-title-row h1{font-size:2.35rem!important}.unit-page .journey-card{margin-top:-42px!important}}
+</style>
+<style id="v11-shared-unit-artwork">
+.unit-page .hero{background-image:linear-gradient(90deg,rgba(14,12,18,.52) 0%,rgba(14,12,18,.28) 44%,rgba(14,12,18,.06) 100%),url('assets/skyland-unit-02.png')!important;background-size:cover!important;background-position:center!important;min-height:650px!important}
+.unit-page .hero::before{background:linear-gradient(180deg,rgba(255,210,150,.03) 0%,rgba(10,10,16,.01) 68%,rgba(235,232,229,.78) 100%)!important}
+@media(max-width:760px){.unit-page .hero{min-height:560px!important;background-position:center!important}}
+</style>
+
+<style id="v11-showcase-composition">
+/* Showcase composition: artwork stays clean; typography is HTML/CSS */
+.unit-page .hero{position:relative!important;min-height:650px!important;padding:34px 38px 82px!important;align-items:stretch!important;justify-content:stretch!important}
+.unit-page .hero::before{background:linear-gradient(180deg,rgba(6,10,18,.10) 0%,rgba(6,10,18,.01) 48%,rgba(6,10,18,.18) 100%)!important;pointer-events:none}
+.unit-page .hero-card{position:relative!important;width:100%!important;max-width:none!important;height:auto!important;min-height:534px!important;display:block!important;text-shadow:0 2px 8px rgba(0,0,0,.42)!important}
+.unit-page .kicker{position:absolute!important;top:0!important;left:0!important;right:auto!important;margin:0!important;font-size:14px!important;font-weight:650!important;color:rgba(255,255,255,.95)!important;text-align:left!important;text-shadow:0 2px 7px rgba(0,0,0,.42)!important}
+.unit-page .hero-title-row{position:absolute!important;top:8%!important;left:50%!important;transform:translateX(-50%)!important;width:min(900px,82%)!important;text-align:center!important}
+.unit-page .hero-title-row h1{margin:0!important;max-width:none!important;text-align:center!important;font-size:clamp(2.25rem,4.5vw,4rem)!important;text-shadow:0 3px 10px rgba(0,0,0,.44)!important}
+.unit-page .hero-copy-grid{position:static!important;display:block!important;margin:0!important;max-width:none!important}
+.unit-page .hook{position:absolute!important;top:26%!important;left:50%!important;transform:translateX(-50%)!important;width:min(860px,84%)!important;margin:0!important;text-align:center!important;font-size:clamp(1.02rem,1.8vw,1.35rem)!important;line-height:1.55!important;text-shadow:0 2px 8px rgba(0,0,0,.44)!important}
+.unit-page .desc{position:absolute!important;right:0!important;bottom:54px!important;width:min(520px,46%)!important;margin:0!important;text-align:right!important;font-size:1rem!important;line-height:1.75!important;color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.46)!important}
+.unit-page .story-tags{position:absolute!important;right:0!important;bottom:0!important;margin:0!important;justify-content:flex-start!important;text-align:right!important}
+.unit-page .story-tags span{padding:0!important;background:transparent!important;border:0!important;backdrop-filter:none!important;color:#fff!important;font-size:.95rem!important;font-weight:700!important;text-shadow:0 2px 7px rgba(0,0,0,.48)!important}
+@media(max-width:760px){
+ .unit-page .hero{min-height:610px!important;padding:26px 18px 72px!important}
+ .unit-page .hero-card{min-height:510px!important}
+ .unit-page .kicker{top:0!important;font-size:12px!important}
+ .unit-page .hero-title-row{top:10%!important;width:94%!important}
+ .unit-page .hero-title-row h1{font-size:2.25rem!important}
+ .unit-page .hook{top:28%!important;width:94%!important;font-size:1rem!important}
+ .unit-page .desc{right:0!important;bottom:50px!important;width:88%!important;font-size:.94rem!important;line-height:1.62!important}
+ .unit-page .story-tags{right:0!important;bottom:8px!important}
+}
+</style>
+
+<style id="v11-showcase-stack-final">
+/* Final showcase layout: unit number top-left, home button top-right, all other copy centered in one vertical stack */
+.unit-page .hero-card{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:72px 28px 54px!important;box-sizing:border-box!important}
+.unit-page .kicker{position:absolute!important;top:0!important;left:0!important;right:auto!important;margin:0!important;text-align:left!important}
+.unit-page .showcase-home{position:absolute!important;top:-8px!important;right:0!important;z-index:5!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:9px 15px!important;border:1px solid rgba(255,255,255,.45)!important;border-radius:999px!important;background:rgba(12,20,34,.18)!important;color:#fff!important;text-decoration:none!important;font-size:14px!important;font-weight:650!important;backdrop-filter:blur(7px)!important;-webkit-backdrop-filter:blur(7px)!important;box-shadow:0 4px 16px rgba(0,0,0,.12)!important;text-shadow:0 1px 5px rgba(0,0,0,.4)!important;transition:transform .2s ease,background .2s ease,border-color .2s ease!important}
+.unit-page .showcase-home:hover{transform:translateY(-2px)!important;background:rgba(12,20,34,.30)!important;border-color:rgba(255,255,255,.7)!important}
+.unit-page .hero-title-row,.unit-page .hero-copy-grid,.unit-page .hook,.unit-page .desc,.unit-page .story-tags{position:static!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;transform:none!important;width:min(900px,92%)!important;margin:0 auto!important;text-align:center!important}
+.unit-page .hero-title-row{order:1!important}
+.unit-page .hero-title-row h1{text-align:center!important;margin:0 0 12px!important}
+.unit-page .hero-copy-grid{order:2!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:14px!important}
+.unit-page .hook{order:1!important;font-size:clamp(1.05rem,1.8vw,1.35rem)!important;line-height:1.5!important}
+.unit-page .desc{order:2!important;color:#fff!important;font-size:1rem!important;line-height:1.7!important;max-width:760px!important}
+.unit-page .story-tags{order:3!important;margin-top:15px!important;justify-content:center!important}
+.unit-page .story-tags span{text-align:center!important}
+@media(max-width:760px){.unit-page .hero-card{padding:76px 10px 40px!important}.unit-page .showcase-home{top:0!important;padding:8px 12px!important;font-size:13px!important}.unit-page .hero-title-row,.unit-page .hero-copy-grid,.unit-page .hook,.unit-page .desc,.unit-page .story-tags{width:96%!important}}
+</style>
+
+<style id="v11-showcase-readability-final">
+/* Readability layer: subtle gradient + multi-layer text shadow; artwork remains fully visible. */
+.unit-page .hero::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(5,12,24,.24) 0%,rgba(5,12,24,.13) 34%,rgba(5,12,24,.03) 62%,rgba(5,12,24,0) 78%),linear-gradient(180deg,rgba(5,10,20,.14) 0%,rgba(5,10,20,.03) 24%,rgba(5,10,20,.08) 76%,rgba(5,10,20,.16) 100%)}
+.unit-page .hero-card{z-index:2!important}
+.unit-page .hero-card h1,.unit-page .hero-card .hook,.unit-page .hero-card .desc,.unit-page .hero-card .story-tags span,.unit-page .hero-card .kicker{color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.82),0 3px 10px rgba(0,0,0,.62),0 8px 24px rgba(0,0,0,.30)!important}
+.unit-page .hero-card h1{text-shadow:0 2px 3px rgba(0,0,0,.82),0 5px 14px rgba(0,0,0,.62),0 10px 30px rgba(0,0,0,.30)!important}
+.unit-page .showcase-home{z-index:6!important}
+</style>
+</head>
+<body class="unit-page unit-2">
+<section class="hero unit-hero-2">
+<div class="hero-card">
+<div class="kicker">יחידה 2</div>
+<a class="showcase-home" href="index.html" aria-label="חזרה לעמוד הבית">⌂&nbsp; עמוד הבית</a>
+<div class="hero-title-row">
+<div>
+<h1>משיקים את העולם</h1>
+
+</div>
+
+</div>
+<div class="hero-copy-grid">
+<div class="hook">📡 SKYLAND קיים. עכשיו הגיע הזמן שהעולם יגלה אותו.</div>
+<p class="desc">ל־SKYLAND כבר יש עולם, דמות, סיפור ומותג. עכשיו ליאו לומד איך למשוך קהל, ליצור תוכן, להניע את העולם ולהשיק קמפיין שלם.</p>
+</div>
+<div class="story-tags"><span>עולם → השקה</span></div>
+</div>
+</section>
+<main class="wrap">
+<section class="journey-card">
+<h2 class="section-title">🗺️ המסע של SKYLAND</h2>
+<p class="section-sub">אינדיקציה חזותית למיקום הנוכחי במסע. מתחתיה תמצאו את מפגשי היחידה — כל קופסה פותחת את השיעור המתאים בתוך אותו עמוד.</p>
+<div class="map"><div class="journey-step"><span>🌎</span><b>ממציאים ובונים עולם</b><small>רעיון → עולם</small></div><div class="journey-step current"><span>📢</span><b>משיקים את העולם</b><small>עולם → השקה</small></div><div class="journey-step"><span>🧊</span><b>סטודיו יצירה בתלת־ממד</b><small>דמות → תלת־ממד → מוצר</small></div><div class="journey-step"><span>🌐</span><b>בונים את האתר</b><small>נכסים → אתר</small></div><div class="journey-step"><span>📱</span><b>בונים את אפליקציית ה־Web</b><small>אתר → לוגיקה → אפליקציה</small></div><div class="journey-step"><span>🚀</span><b>סטארטאפ ופרויקט גמר</b><small>אפליקציה → סטארטאפ → תערוכה</small></div></div>
+</section>
+<section class="hub-card">
+<div class="hub-head">
+<div>
+<h2>משיקים את העולם</h2>
+<p>ביחידה הזאת ממשיכים את אותו SKYLAND ואת אותם תוצרים שנבנו עד עכשיו. תוכן המפגשים המקורי נשמר ללא שינוי.</p>
+</div>
+</div>
+<div class="tab-help">בחרו מפגש — השיעור ייפתח מיד מתחת לשורה</div><div aria-label="מפגשי היחידה" class="lesson-tabs" role="tablist">
+<button aria-selected="true" class="lesson-tab active" data-lesson="6" onclick="window.SkylandUnitHub&amp;&amp;window.SkylandUnitHub.selectLesson(6,'student')" role="tab" type="button"><small class="tab-label">מפגש 6</small><span class="tab-icon">📣</span><strong>העולם שלי עולה לרשת</strong></button><button aria-selected="false" class="lesson-tab" data-lesson="7" onclick="window.SkylandUnitHub&amp;&amp;window.SkylandUnitHub.selectLesson(7,'student')" role="tab" type="button"><small class="tab-label">מפגש 7</small><span class="tab-icon">📺</span><strong>לעולם שלי יש ערוץ</strong></button><button aria-selected="false" class="lesson-tab" data-lesson="8" onclick="window.SkylandUnitHub&amp;&amp;window.SkylandUnitHub.selectLesson(8,'student')" role="tab" type="button"><small class="tab-label">מפגש 8</small><span class="tab-icon">🎯</span><strong>גורמים לאנשים לרצות להיכנס לעולם שלי</strong></button><button aria-selected="false" class="lesson-tab" data-lesson="9" onclick="window.SkylandUnitHub&amp;&amp;window.SkylandUnitHub.selectLesson(9,'student')" role="tab" type="button"><small class="tab-label">מפגש 9</small><span class="tab-icon">🎬</span><strong>העולם שלי מתחיל לזוז</strong></button><button aria-selected="false" class="lesson-tab" data-lesson="10" onclick="window.SkylandUnitHub&amp;&amp;window.SkylandUnitHub.selectLesson(10,'student')" role="tab" type="button"><small class="tab-label">מפגש 10</small><span class="tab-icon">🚀</span><strong>LAUNCH DAY — משיקים את העולם</strong></button>
+</div>
+<div class="lesson-stage">
+<div class="lesson-stage-top">
+<div>
+<b id="activeLessonTitle">מפגש 6 · העולם שלי עולה לרשת</b>
+<small><span id="modeBadge">מצב תלמיד</span> · מעבר למצב מורה מוגן בסיסמה.</small>
+</div>
+<div class="stage-actions">
+<button id="openStudent" type="button">🧑‍🎨 תלמיד</button>
+<button id="openTeacher" type="button">🔒 מורה</button><a href="#" id="openFull" rel="noopener" target="_blank">↗ פתיחה מלאה</a>
+</div>
+</div>
+<iframe id="lessonFrame" loading="eager" src="lesson-06-student.html" title="תוכן השיעור"></iframe>
+</div>
+</section>
+</main>
+<script>
+(function(){
+  const UNIT=2;
+  const NUMS=[6, 7, 8, 9, 10];
+  const TITLES=["העולם שלי עולה לרשת", "לעולם שלי יש ערוץ", "גורמים לאנשים לרצות להיכנס לעולם שלי", "העולם שלי מתחיל לזוז", "LAUNCH DAY — משיקים את העולם"];
+  let active=NUMS[0];
+  let mode='student';
+  function byId(id){return document.getElementById(id)}
+  function fileFor(n,m){return `lesson-${String(n).padStart(2,'0')}-${m}.html`}
+  function updateUI(n,m,doScroll){
+    active=n; mode=m||'student';
+    const idx=NUMS.indexOf(n);
+    document.querySelectorAll('.lesson-tab').forEach(t=>{
+      const on=Number(t.dataset.lesson)===n;
+      t.classList.toggle('active',on);
+      t.setAttribute('aria-selected',on?'true':'false');
+    });
+    const frame=byId('lessonFrame');
+    const target=fileFor(n,mode);
+    if(frame && frame.getAttribute('src')!==target) frame.setAttribute('src',target);
+    if(byId('activeLessonTitle')) byId('activeLessonTitle').textContent=`מפגש ${n} · ${TITLES[idx]||''}`;
+    if(byId('modeBadge')) byId('modeBadge').textContent=mode==='teacher'?'מצב מורה':'מצב תלמיד';
+    if(byId('openFull')) byId('openFull').setAttribute('href',target);
+    try{localStorage.setItem(`skyland-unit-${UNIT}-lesson`,String(n));localStorage.setItem(`skyland-unit-${UNIT}-mode`,mode)}catch(e){}
+    history.replaceState(null,'',`#lesson-${String(n).padStart(2,'0')}-${mode}`);
+    if(doScroll){const stage=document.querySelector('.lesson-stage'); if(stage) stage.scrollIntoView({behavior:'smooth',block:'start'})}
+  }
+  function selectLesson(n,m='student'){ if(!NUMS.includes(Number(n))) return; updateUI(Number(n),m,true); }
+  function openTeacher(){
+    const pw=prompt('🔒 מצב מורה — הזינו סיסמה');
+    if(pw==='231284') updateUI(active,'teacher',false); else if(pw!==null) alert('הסיסמה אינה נכונה.');
+  }
+  window.SkylandUnitHub={selectLesson,openTeacher};
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.querySelectorAll('.lesson-tab').forEach(t=>t.addEventListener('click',e=>{e.preventDefault();selectLesson(Number(t.dataset.lesson),'student')}));
+    byId('openStudent')?.addEventListener('click',()=>updateUI(active,'student',false));
+    byId('openTeacher')?.addEventListener('click',openTeacher);
+    let start=NUMS[0], startMode='student';
+    const hm=location.hash.match(/lesson-(\d{2})-(student|teacher)/);
+    if(hm && NUMS.includes(Number(hm[1]))){start=Number(hm[1]);startMode=hm[2]==='teacher'?'student':hm[2];}
+    else{try{const saved=Number(localStorage.getItem(`skyland-unit-${UNIT}-lesson`)); if(NUMS.includes(saved)) start=saved;}catch(e){}}
+    updateUI(start,startMode,false);
+  });
+})();
+</script>
+<script src="assets/skyland-hebrew-ui.js"></script>
+</body>
+</html>

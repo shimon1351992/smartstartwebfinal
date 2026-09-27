@@ -1,0 +1,71 @@
+
+/* SKYLAND V1.1 — Global Typography Reset */
+:root{
+  --sky-font-ui: system-ui,-apple-system,"Segoe UI",Arial,"Noto Sans Hebrew",sans-serif;
+  --sky-font-display: system-ui,-apple-system,"Segoe UI",Arial,"Noto Sans Hebrew",sans-serif;
+  --sky-text:#182230;
+  --sky-muted:#667085;
+  --sky-title:#101828;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body,input,textarea,select,button,table{font-family:var(--sky-font-ui)!important}
+body{font-size:16px;line-height:1.68;letter-spacing:0!important}
+h1,h2,h3,h4,h5,h6,.section-title,.brand,.hook,.unit-card h3,.lesson-tab strong{
+  font-family:var(--sky-font-display)!important;
+  letter-spacing:0!important;
+  text-wrap:balance;
+}
+h1{font-weight:750!important;line-height:1.12!important}
+h2{font-weight:720!important;line-height:1.22!important}
+h3{font-weight:680!important;line-height:1.28!important}
+h4,h5,h6{font-weight:650!important;line-height:1.35!important}
+p,li,td,th,label,summary,input,textarea,select,button{letter-spacing:0!important}
+p,li{line-height:1.72}
+button,.buttons a,.qa3-nav a,.mode a,.card-button,.stage-actions button{font-weight:650!important}
+small,.small,.save-note,.eyebrow{font-weight:500!important;line-height:1.5}
+strong,b{font-weight:700}
+code,pre,.prompt,.promptbox,.editprompt{font-family:var(--sky-font-ui)!important}
+
+/* Student pages */
+.lesson-page.student-page header h1{font-size:clamp(2rem,4.5vw,3.15rem)!important}
+.lesson-page.student-page main{font-size:16px}
+.lesson-page.student-page .step h2{font-size:clamp(1.28rem,2.4vw,1.65rem)!important;margin-top:0;line-height:1.3!important}
+.lesson-page.student-page .step h3{font-size:1.12rem!important}
+.lesson-page.student-page .tip,.lesson-page.student-page .success{font-size:.98rem}
+.lesson-page.student-page label{font-size:.98rem;font-weight:650!important}
+.lesson-page.student-page input,.lesson-page.student-page textarea,.lesson-page.student-page select{font-size:1rem;line-height:1.55}
+.lesson-page.student-page .v11-story-step h3{font-size:.82rem!important;font-weight:700!important}
+.lesson-page.student-page .v11-story-step p{font-size:.88rem!important;line-height:1.5!important}
+.lesson-page.student-page .v11-episode{font-weight:700!important;letter-spacing:0!important}
+
+/* Teacher pages */
+.lesson-page.teacher-page .hero h1{font-size:clamp(2rem,3.8vw,2.85rem)!important}
+.lesson-page.teacher-page main{font-size:16px}
+.lesson-page.teacher-page .section-title{font-size:clamp(1.35rem,2.1vw,1.65rem)!important}
+.lesson-page.teacher-page .card h3{font-size:1.12rem!important}
+.lesson-page.teacher-page table{font-size:.93rem!important;line-height:1.55}
+.lesson-page.teacher-page aside,.lesson-page.teacher-page .nav a{font-size:.9rem!important}
+.lesson-page.teacher-page .brand{font-size:1rem!important;font-weight:750!important}
+.lesson-page.teacher-page .v11-story-step h3{font-size:.82rem!important;font-weight:700!important}
+.lesson-page.teacher-page .v11-story-step p{font-size:.88rem!important;line-height:1.5!important}
+.lesson-page.teacher-page .v11-episode{font-weight:700!important;letter-spacing:0!important}
+
+/* Home */
+.home-page h1{font-size:clamp(2.35rem,5vw,4.1rem)!important;font-weight:760!important}
+.home-page .unit-card h3{font-size:1.25rem!important;font-weight:720!important}
+.home-page .unit-heb{font-size:1.08rem!important;font-weight:680!important}
+.home-page .unit-desc{font-size:.94rem;line-height:1.55}
+
+/* Unit hubs */
+.unit-page .hero h1{font-size:clamp(2rem,4vw,3.25rem)!important;font-weight:760!important}
+.unit-page .hook{font-size:clamp(1.08rem,2.1vw,1.55rem)!important;font-weight:680!important;line-height:1.45}
+.unit-page .desc{font-size:1.02rem!important;line-height:1.75!important}
+.unit-page .section-title{font-size:clamp(1.45rem,2.5vw,1.9rem)!important}
+.unit-page .journey-step b{font-size:.88rem!important;font-weight:650!important}
+.unit-page .journey-step small{font-size:.78rem!important}
+.unit-page .hub-head h2{font-size:clamp(1.45rem,2.5vw,1.9rem)!important}
+.unit-page .lesson-tab strong{font-size:.94rem!important;font-weight:680!important}
+
+/* Hebrew typography readability */
+[dir="rtl"] h1,[dir="rtl"] h2,[dir="rtl"] h3,[dir="rtl"] p,[dir="rtl"] li,[dir="rtl"] td,[dir="rtl"] th{word-spacing:.01em}
+@media(max-width:700px){body{font-size:15.5px}.lesson-page.student-page .step h2{font-size:1.3rem!important}.lesson-page.teacher-page .section-title{font-size:1.35rem!important}}

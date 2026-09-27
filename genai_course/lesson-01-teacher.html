@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Canva AI &amp; Web Creators — מפגש 01</title>
+<style>
+:root{--ink:#15263a;--blue:#2d6cdf;--navy:#17324d;--sky:#eef5ff;--card:#fff;--muted:#66727d;--green:#eaf8ef;--yellow:#fff7d8;--gray:#f5f7fa;--shadow:0 12px 32px #17324d18}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:#f4f7fb;color:var(--ink);line-height:1.65}
+a{color:var(--blue)}.layout{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+aside{position:sticky;top:0;height:100vh;background:var(--navy);color:#fff;padding:24px 18px;overflow:auto}
+.brand{font-weight:800;font-size:19px}.small{font-size:12px;opacity:.72}.nav{margin-top:24px}.nav a{display:block;color:#dce8f7;text-decoration:none;padding:8px 10px;border-radius:9px;margin:2px 0;font-size:14px}.nav a:hover{background:#ffffff18;color:#fff}
+main{max-width:1120px;width:100%;margin:auto;padding:34px 42px 80px}.hero{background:linear-gradient(135deg,#17324d,#2d6cdf);color:#fff;border-radius:24px;padding:38px;box-shadow:var(--shadow)}
+.eyebrow{font-size:13px;font-weight:700;opacity:.8}.hero h1{font-size:44px;line-height:1.1;margin:8px 0}.hero p{max-width:760px;margin:8px 0 20px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#ffffff1c;border:1px solid #ffffff35;border-radius:999px;padding:6px 11px;font-size:13px}
+.progress{display:flex;gap:6px;overflow:auto;margin:18px 0 0}.progress span{white-space:nowrap;background:#fff;color:var(--navy);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700}
+section{scroll-margin-top:18px;margin-top:26px}.section-title{display:flex;align-items:center;gap:10px;font-size:24px;margin:0 0 12px}.section-title:after{content:"";height:2px;background:#dce5f0;flex:1}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:var(--card);border:1px solid #e1e7ef;border-radius:17px;padding:18px;box-shadow:0 4px 16px #17324d0b}
+.card h3{margin:0 0 8px}.callout{border-right:5px solid var(--blue);background:var(--sky)}.green{background:var(--green)}.yellow{background:var(--yellow)}
+ul,ol{margin:8px 0;padding-right:22px}.quote{font-size:18px;font-weight:700;background:#fff;border-radius:15px;padding:18px;border:1px solid #dce5f0}
+table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid #dfe6ef;border-radius:15px;overflow:hidden;font-size:14px}th{background:var(--navy);color:#fff}th,td{padding:10px 12px;text-align:right;border-bottom:1px solid #e7ebf1}tr:last-child td{border-bottom:0}
+.timeline td:first-child{font-weight:800;white-space:nowrap;color:var(--blue)}details{background:#fff;border:1px solid #dfe6ef;border-radius:14px;margin:8px 0;padding:0 15px}summary{cursor:pointer;font-weight:800;padding:13px 0}
+.prompt{direction:rtl;background:#101d2c;color:#eef6ff;border-radius:15px;padding:16px;font-family:Arial,sans-serif;white-space:pre-wrap}.ltr{direction:ltr;text-align:left}
+.check{list-style:none;padding:0}.check li{background:#fff;border:1px solid #e1e7ef;border-radius:11px;padding:9px 12px;margin:7px 0}.next{background:var(--navy);color:#fff;border-radius:18px;padding:20px;margin-top:24px}
+.topbtn{position:fixed;left:22px;bottom:22px;background:var(--blue);color:#fff;text-decoration:none;padding:10px 14px;border-radius:999px;box-shadow:var(--shadow)}
+@media(max-width:850px){.layout{display:block}aside{position:relative;height:auto}.nav{display:flex;overflow:auto;gap:4px}.nav a{white-space:nowrap}main{padding:20px}.grid{grid-template-columns:1fr}.hero h1{font-size:34px}}
+@media print{aside,.topbtn{display:none}.layout{display:block}main{max-width:none;padding:0}.hero{box-shadow:none}details{break-inside:avoid}details>*{display:block!important}}
+</style>
+<style id="qa3-nav-style">
+.qa3-nav{position:sticky;top:0;z-index:999;background:#fff;border-bottom:1px solid #e5e7eb;padding:9px 4%;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.qa3-nav a{color:#172033;text-decoration:none;background:#eef1f7;border-radius:999px;padding:7px 12px;font-weight:700}
+.qa3-nav .spacer{flex:1}
+</style><style id="v11-style">
+:root{--v11-nav-h:52px}.v11-progress{position:sticky;top:var(--v11-nav-h);z-index:997;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid #dfe5ef;padding:8px 4%;box-shadow:0 4px 16px rgba(15,23,42,.06)}.v11-progress-row{display:flex;align-items:center;gap:12px;max-width:1200px;margin:auto}.v11-track{height:9px;background:#e7eaf0;border-radius:99px;overflow:hidden;flex:1}.v11-fill{height:100%;width:0;background:linear-gradient(90deg,#7c3aed,#06b6d4);transition:width .25s}.v11-story,.v11-artifact,.v11-backpack{max-width:1200px;margin:22px auto;padding:22px;border:1px solid #e3e7ef;border-radius:22px;background:linear-gradient(135deg,#fff,#f6f8ff);box-shadow:0 12px 35px rgba(15,23,42,.06)}.v11-story h2,.v11-artifact h2,.v11-backpack h2{margin-top:0}.v11-episode{font-weight:800;color:#6d28d9}.v11-chips{display:flex;gap:8px;flex-wrap:wrap}.v11-chip{padding:7px 11px;border-radius:999px;background:#eef2ff;font-size:.9rem}.v11-present-btn{border:0;border-radius:999px;padding:8px 13px;font-weight:800;cursor:pointer;background:#111827;color:white}.v11-presenting .qa4-training,.v11-presenting .teacher-note,.v11-presenting [class*="rescue"],.v11-presenting [class*="checklist"]{display:none!important}.v11-presenting .v11-story,.v11-presenting .v11-artifact{font-size:1.18em}.v11-continue{display:none;margin:8px auto;max-width:1200px;padding:10px 14px;border-radius:14px;background:#ecfeff;border:1px solid #a5f3fc}.v11-continue.show{display:block}.v11-lock{position:fixed;inset:0;z-index:5000;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:20px}.v11-lock.open{display:flex}.v11-lock-card{width:min(420px,100%);background:white;border-radius:22px;padding:24px;box-shadow:0 24px 80px rgba(0,0,0,.25)}.v11-lock-card input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ccd2dd;border-radius:12px;font-size:1rem}.v11-lock-actions{display:flex;gap:8px;margin-top:12px}.v11-lock-actions button{padding:10px 14px;border:0;border-radius:10px;font-weight:800;cursor:pointer}.v11-lock-msg{min-height:1.4em;color:#b91c1c;font-weight:700}.v11-unit-link{display:inline-block;margin-top:10px;font-weight:800}.v11-presenting .qa3-nav{position:static}.v11-presenting .v11-progress{display:none}
+@media(max-width:700px){.v11-story,.v11-artifact,.v11-backpack{margin:14px 12px;padding:17px}.v11-progress{padding:7px 12px}.v11-progress-row{gap:8px}}
+
+/* V1.1 SKYLAND episode strip redesign */
+.v11-story{max-width:1200px;margin:14px auto 20px;padding:14px 16px;border:1px solid #dfe5ef;border-radius:18px;background:linear-gradient(135deg,#ffffff 0%,#f8f7ff 55%,#f0fbff 100%);box-shadow:0 8px 24px rgba(15,23,42,.055)}
+.v11-story .v11-episode{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:.78rem;letter-spacing:.02em;color:#6d28d9;font-weight:900}
+.v11-story-flow{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.15fr) 28px minmax(0,1fr);align-items:stretch;gap:8px;direction:rtl}
+.v11-story-step{min-width:0;padding:11px 13px;border-radius:14px;background:rgba(255,255,255,.78);border:1px solid #e8eaf2}
+.v11-story-step.is-today{background:#fff;border-color:#c4b5fd;box-shadow:0 5px 16px rgba(109,40,217,.08)}
+.v11-story-step h3{font-size:.84rem;margin:0 0 5px;color:#475569;font-weight:900}
+.v11-story-step.is-today h3{color:#6d28d9}
+.v11-story-step p{margin:0;font-size:.88rem;line-height:1.45;color:#334155}
+.v11-story-arrow{display:flex;align-items:center;justify-content:center;color:#7c3aed;font-size:1.35rem;font-weight:900;opacity:.8}
+.v11-story-footer{display:flex;justify-content:flex-end;margin-top:9px}
+.v11-story .v11-unit-link{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 10px;border-radius:999px;background:#f1f5f9;color:#475569;text-decoration:none;font-size:.78rem;font-weight:800}
+.v11-story .v11-unit-link:hover{background:#e9e5ff;color:#5b21b6}
+@media(max-width:760px){.v11-story{margin:10px 10px 16px;padding:12px}.v11-story-flow{grid-template-columns:1fr;gap:6px}.v11-story-arrow{height:16px;transform:rotate(90deg);font-size:1rem}.v11-story-step{padding:10px 12px}.v11-story-footer{justify-content:stretch}.v11-story .v11-unit-link{justify-content:center;width:100%;box-sizing:border-box}}
+</style><link href="assets/skyland-typography.css" rel="stylesheet"/>
+</head>
+<body class="lesson-page teacher-page" id="top"><nav class="qa3-nav"><span><b>מפגש 1 / 30</b></span><span class="spacer"></span><a href="lesson-01-student.html">🧑‍🎨 לתלמיד</a><a href="lesson-02-teacher.html">מפגש 2 ←</a><button class="v11-present-btn" type="button">🖥️ מצב הקרנה</button></nav><section class="v11-story" id="skyland-story"><div class="v11-episode">🌎 SKYLAND Story Experience · יחידה 1</div><div class="v11-story-flow"><div class="v11-story-step"><h3>⏮ בפרק הקודם</h3><p>זהו הפרק הראשון: SKYLAND מתחיל כרעיון שעוד לא קיבל צורה.</p></div><div aria-hidden="true" class="v11-story-arrow">←</div><div class="v11-story-step is-today"><h3>● הפרק של היום</h3><p>SKYLAND עדיין לא קיים. היום המורה מדגים איך הופכים רעיון מעורפל לתיאור שאפשר לתת ל־Canva.</p></div><div aria-hidden="true" class="v11-story-arrow">←</div><div class="v11-story-step"><h3>בפרק הבא ⏭</h3><p>הרעיון של SKYLAND כבר קיים. עכשיו הוא מקבל מראה, מקומות וחוקים שחוזרים באופן עקבי.</p></div></div><div class="v11-story-footer"><a class="v11-unit-link" href="unit-01.html">🎬 לעמוד פתיחת יחידה 1</a></div></section><div class="layout">
+<aside>
+<div class="brand">CANVA AI &amp; WEB CREATORS</div><div class="small">Teacher Guide Prototype • מפגש 01</div>
+<nav class="nav">
+<a href="#overview">סקירה</a><a href="#goals">מה מלמדים?</a><a href="#prep">הכנת מדריך</a>
+<a href="#teacher-example">דוגמה למדריך</a><a href="#workspace">סביבת התלמיד</a><a href="#time">תסריט 90 דקות</a><a href="#wow">WOW + Mission</a><a href="#demo">הדגמה</a><a href="#prompt">תבניות Prompt</a><a href="#work">עבודה מעשית</a><a href="#boss">Boss Challenge</a><a href="#gallery">Gallery</a><a href="#rescue">Rescue Kit</a><a href="#success">Checklist</a>
+</nav></aside>
+<main><section class="card" style="border:2px solid #0ea5e9;background:#f4fbff"><h2>🎯 מה באמת לומדים היום?</h2><p>לתרגם רעיון חזותי ל־Prompt ברור, לבדוק תוצאה ולשפר אותה באופן מכוון.</p><p><b>המיומנות של היום:</b> Prompt Engineering</p><p><b>כלי החשיבה:</b> WHAT → WHERE → DETAILS → STYLE → GENERATE → COMPARE → IMPROVE</p><p><b>איך מתרגלים?</b> באמצעות התוצר הממשי של המפגש בתוך Canva — לא באמצעות Worksheet בלבד.</p><p><b>בסוף המפגש התלמיד יוכל:</b> להראות את התוצר שבנה, להסביר החלטה מרכזית אחת ולתאר מה שיפר בעקבות בדיקה.</p></section><section class="card" style="border:2px solid #7c3aed;background:#faf7ff"><h2>🔗 רצף הבנייה — מה קיים ומה בונים היום</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px"><div><b>📦 מה כבר קיים?</b><p>אין — זהו מפגש הפתיחה של הפרויקט.</p></div><div><b>🎨 מה בונים היום בפועל ב־Canva?</b><p>תמונת עולם V1→V3 + WORLD CONCEPT CARD.</p></div><div><b>✅ מה חייב להיות בנוי בסוף?</b><p>לפחות תמונת עולם משופרת אחת ו־WORLD CONCEPT CARD שמור בפרויקט MY WORLD.</p></div><div><b>➡️ איך זה נכנס למפגש הבא?</b><p>במפגש 2 התמונה, הצבעים והסגנון הופכים ל־STYLE DNA ול־WORLD KIT.</p></div></div></section>
+<header class="hero" id="overview">
+<div class="eyebrow">🌎 יחידה 1 — CREATE YOUR WORLD</div><h1>מפגש 01 — ממציאים עולם</h1>
+<p><b>מה מלמדים בפועל:</b> כתיבת Prompts ליצירת תמונות ב־AI ושיפור שלהם בהדרגה. <b>הסיפור שדרכו מלמדים:</b> כל תלמיד ממציא עולם חדש ויוצר עבורו תמונת קונספט. בסוף בונים <b>WORLD CONCEPT CARD</b> שישמש בסיס למפגש הבא.</p>
+<div class="chips"><span class="chip">גיל 10–13</span><span class="chip">90 דקות</span><span class="chip">תוצר: WORLD CONCEPT CARD</span><span class="chip">דוגמה: SKYLAND</span></div>
+<div class="progress"><span>פתיחה</span><span>משימה</span><span>רעיון</span><span>הדגמה</span><span>תכנון</span><span>בנייה</span><span>שיפור</span><span>אתגר</span><span>גלריה</span><span>שמירה → המשך</span></div>
+</header>
+<section id="goals"><h2 class="section-title">🎯 מה המורה מלמד היום?</h2>
+<div class="grid">
+<div class="card callout"><h3>המיומנות המרכזית — Prompt Engineering לתמונות</h3>
+<p>המטרה אינה רק ליצור תמונה יפה. התלמיד לומד ש־AI מגיב למידע שהוא מקבל, ולכן Prompt טוב נבנה בהדרגה.</p>
+<p style="font-size:22px;font-weight:800">WHAT → WHERE → DETAILS → STYLE → GENERATE → COMPARE → IMPROVE</p>
+<p><b>בסוף השיעור התלמיד צריך להיות מסוגל להסביר:</b> מה הוספתי ל־Prompt, מה השתנה בתמונה, ומה אשנה בניסיון הבא.</p></div>
+<div class="card"><h3>הסיפור שמחזיק את השיעור</h3>
+<p>כל תלמיד ממציא עולם חדש. העולם הוא המסגרת היצירתית שמאפשרת לתרגל שוב ושוב כתיבת Prompts בלי להפוך את השיעור להרצאה טכנית.</p>
+<p><b>תוצר:</b> תמונת עולם משופרת + WORLD CONCEPT CARD.</p>
+<p><b>דוגמת המדריך:</b> SKYLAND — עיר על איים מרחפים מעל העננים; כוח הכבידה משתנה.</p></div>
+</div>
+<div class="card green" style="margin-top:14px"><h3>משפט המפתח למדריך</h3>
+<p><b>אל תדגים Prompt מושלם.</b> הדגם Prompt חלש, צור תמונה, שאל מה חסר, הוסף רכיב אחד, צור שוב והשווה. התהליך הוא השיעור.</p></div>
+</section>
+<section id="prep">
+<div class="card callout" style="margin-top:14px">
+<h3>🧑‍🎨 לצד המדריך קיים Student Workspace</h3>
+<p>לתלמיד יש עמוד נפרד ונקי שבו הוא מבצע את המשימות בפועל: Prompt Builder, בדיקת V1, שיפור KEEP + CHANGE + GOAL, השוואה ו־WORLD CONCEPT CARD. אין צורך להציג לו את הערות ההוראה, התזמון או ה־Rescue Kit של המורה.</p>
+<p><b>למדריך:</b> אפשר לפתוח את מצב התלמיד מראש בכרטיסייה נוספת כדי להכיר את רצף העבודה, אך אין כאן מעקב חי אחר מסך של תלמיד מסוים.</p>
+</div><h2 class="section-title">🧰 הכנת המדריך לפני השיעור</h2>
+<div class="grid"><div class="card"><ul><li>פתח דוגמת SKYLAND.</li><li>הכן WORLD CONCEPT CARD מוגמר + גרסה חלשה להשוואה.</li><li>בדוק את הממשק בחשבון תלמיד אמיתי.</li><li>הכן מסלול 🔄 ללא תלות ב־AI.</li><li>הכן טיימר, Boss Challenge ותבנית משוב.</li></ul></div>
+<div class="card yellow"><h3>בדיקת Canva Education</h3><p>🟢 Design, Text, Elements, Shapes, Pages, Video לפי הצורך</p><p>🟡 Canva AI / Create an Image — לפי הרשאות</p><p>🔄 בנייה ידנית ב־Elements</p></div></div>
+<details><summary>🎓 הכשרת מדריך מומלצת</summary><p><a href="https://www.canva.com/design-school/" target="_blank">Canva Design School</a></p><p><a href="https://www.canva.com/design-school/courses/ai-in-the-classroom/" target="_blank">AI in the Classroom</a></p><p>לפני הכניסה לכיתה יש לבדוק שהכלי מופיע בחשבון התלמיד ולהכין דוגמה של התוצאה הצפויה.</p></details>
+</section>
+<section id="teacher-example">
+<h2 class="section-title">🧑‍🏫 דוגמה מוכנה למדריך — כרטיס קונספט לעולם</h2>
+<div class="card callout">
+<h3>למה הדוגמה נמצאת כאן?</h3>
+<p>בסעיף ההכנה המדריך מתבקש להגיע עם WORLD CONCEPT CARD מוכן. לכן אין צורך להמציא דוגמה לבד:
+    השתמשו בדוגמת <b>SKYLAND</b> שלהלן, הציגו אותה בכיתה, או העתיקו אותה ל־Canva ובנו ממנה כרטיס חזותי משלכם.</p>
+<p><b>חשוב:</b> אל תציגו רק את התוצאה הסופית. בשיעור עצמו השתמשו גם ב־Prompt V1 → V2 → V3 כדי להראות לתלמידים כיצד Prompt משתפר.</p>
+</div>
+<details open="">
+<summary>👁 הצג דוגמה מוכנה למדריך — SKYLAND</summary>
+<div class="card" style="margin-top:14px">
+<div style="text-align:center;margin-bottom:18px">
+<div style="font-size:13px;font-weight:800;letter-spacing:1px;opacity:.7">WORLD CONCEPT CARD</div>
+<h3 style="font-size:30px;margin:5px 0">☁️ SKYLAND</h3>
+<p style="font-size:18px">עיר עתידנית הבנויה על איים מרחפים מעל ים של עננים.</p>
+</div>
+<div class="grid">
+<div class="card"><h3>מה? (WHAT)</h3><p>עיר עתידנית הבנויה על איים מרחפים.</p></div>
+<div class="card"><h3>איפה? (WHERE)</h3><p>מעל ים עצום של עננים.</p></div>
+<div class="card"><h3>פרטים (DETAILS)</h3>
+<p>גשרים המחברים בין האיים • מגדלים לבנים וכחולים • צמחייה צבעונית • מפלים הנופלים מקצות האיים.</p>
+</div>
+<div class="card"><h3>סגנון (STYLE)</h3>
+<p>תלת־ממדי מצויר וצבעוני • תאורת בוקר רכה • תחושת הרפתקה וחופש.</p>
+</div>
+</div>
+<h3 style="margin-top:22px">פרומפט סופי מוכן להעתקה</h3>
+<div class="prompt">עיר עתידנית הבנויה על איים מרחפים מעל ים של עננים. גשרים מחברים בין האיים, מגדלים לבנים וכחולים, צמחייה צבעונית ומפלים הנופלים מקצות האיים. סגנון תלת־ממדי מצויר וצבעוני, תאורת בוקר רכה ותחושת הרפתקה וחופש.</div>
+<h3 style="margin-top:22px">מה המדריך אומר כשהוא מציג את הכרטיס?</h3>
+<div class="quote">“זה התוצר שאליו נגיע, אבל הדבר החשוב היום הוא לא הכרטיס עצמו. אני רוצה שתראו איך בניתי את ה־Prompt שהוביל לתמונה. התחלתי מרעיון קצר, בדקתי מה קיבלתי, הוספתי מידע ושיפרתי בכל פעם דבר אחד.”</div>
+</div>
+</details>
+<details>
+<summary>🪜 הצג את הפרומפט V1 → V2 → V3 → סופי</summary>
+<div class="card" style="margin-top:14px">
+<h3>V1 — רעיון בסיסי</h3>
+<div class="prompt">עיר על איים מרחפים.</div>
+<p><b>מה חסר?</b> לא אמרנו איפה העיר, אילו פרטים חשובים או באיזה סגנון היא צריכה להיראות.</p>
+<h3>V2 — מוסיפים מקום (WHERE)</h3>
+<div class="prompt">עיר על איים מרחפים מעל ים של עננים.</div>
+<p><b>מה השתנה?</b> ה־AI קיבל הקשר ברור יותר לסביבה.</p>
+<h3>V3 — מוסיפים פרטים (DETAILS)</h3>
+<div class="prompt">עיר על איים מרחפים מעל ים של עננים, גשרים מחברים בין האיים, מגדלים לבנים וכחולים וצמחייה צבעונית.</div>
+<p><b>מה השתנה?</b> העולם מתחיל לקבל זהות ייחודית במקום להישאר “עיר מרחפת” כללית.</p>
+<h3>סופי — מוסיפים סגנון (STYLE)</h3>
+<div class="prompt">עיר עתידנית הבנויה על איים מרחפים מעל ים של עננים. גשרים מחברים בין האיים, מגדלים לבנים וכחולים, צמחייה צבעונית ומפלים הנופלים מקצות האיים. סגנון תלת־ממדי מצויר וצבעוני, תאורת בוקר רכה ותחושת הרפתקה וחופש.</div>
+<p><b>נקודת ההוראה:</b> הציגו את הגרסאות זו לצד זו ושאלו: “איזה מידע חדש נתנו ל־AI בכל שלב, ומה השתנה בעקבותיו?”</p>
+</div>
+</details>
+<details>
+<summary>📋 מה בדיוק להכין לפני שהתלמידים נכנסים?</summary>
+<div class="card" style="margin-top:14px">
+<ul>
+<li>פתחו מראש פרויקט Canva בשם <b>SKYLAND — Teacher Example</b>.</li>
+<li>הכינו עמוד אחד עם WORLD CONCEPT CARD לפי התוכן שמופיע כאן.</li>
+<li>שמרו את V1, V2, V3 והגרסה הסופית — אל תמחקו תוצאות חלשות.</li>
+<li>סדרו את התמונות כך שאפשר יהיה להשוות ביניהן בזמן ההדגמה.</li>
+<li>הכינו גם “דוגמה חלשה”: Prompt קצר ותמונה כללית, כדי לפתוח איתה את ה־WOW.</li>
+<li>בדקו בחשבון תלמיד אמיתי אם כלי יצירת התמונות 🟡 זמין. אם לא — הכינו מראש את מסלול 🔄 Elements.</li>
+</ul>
+<p><b>זמן הכנה מומלץ:</b> המטרה היא להגיע לשיעור עם חומר הדגמה מוכן, כדי שבזמן השיעור המדריך יוכל להתמקד בהוראה ובהשוואה ולא בבניית הדוגמה מאפס.</p>
+</div>
+</details>
+</section>
+<section id="workspace"><h2 class="section-title">📍 סביבת העבודה של התלמיד</h2>
+<table><tr><th>שאלה</th><th>תשובה</th></tr><tr><td>איפה עובדים?</td><td>Canva — פרויקט חדש בשם <b>MY WORLD — [שם העולם]</b>.</td></tr><tr><td>מה בונים?</td><td>WORLD CONCEPT CARD</td></tr><tr><td>כלים עיקריים</td><td>🟢 Design, Text, Elements, Shapes, Pages | 🟡 Canva AI / Create an Image | 🔄 Elements</td></tr><tr><td>מה שומרים?</td><td>את פרויקט Canva ואת התוצר המוגמר בתוך אותו רצף עבודה.</td></tr><tr><td>מה לא עושים?</td><td>לא פותחים פרויקט צדדי ולא מפרסמים לציבור כתנאי למשימה.</td></tr></table>
+<div class="card callout" style="margin-top:12px"><b>הבחנה חשובה:</b> 📘 Word/PDF/HTML = מדריך המורה. 🎨 Canva = סביבת היצירה של התלמיד.</div>
+</section>
+<section id="time"><h2 class="section-title">⏱️ תסריט השיעור — 90 דקות</h2>
+<table class="timeline"><tr><th>זמן</th><th>מה מלמדים</th><th>מה המורה עושה</th><th>מה התלמיד עושה</th></tr>
+<tr><td>0–5</td><td>WOW</td><td>מציג שתי תמונות של אותו עולם — אחת כללית ואחת מדויקת — ושואל למה הן שונות.</td><td>מזהה פרטים שחסרים/נוספו.</td></tr>
+<tr><td>5–10</td><td>Mission</td><td>מסביר: היום נלמד לגרום ל־AI להתקרב למה שיש לנו בראש.</td><td>בוחר רעיון ראשוני לעולם.</td></tr>
+<tr><td>10–18</td><td>רעיון לפני AI</td><td>מלמד את ארבעת הרכיבים: WHAT + WHERE + DETAILS + STYLE.</td><td>ממלא ארבעה רכיבים לפני Generate.</td></tr>
+<tr><td>18–30</td><td>Demo חי</td><td>בונה את SKYLAND בארבעה Prompts: בסיסי → WHERE → DETAILS → STYLE.</td><td>משווה בין התוצאות ומסביר מה השתנה.</td></tr>
+<tr><td>30–38</td><td>Planning</td><td>עובר בין התלמידים ומאשר שהרעיון מספיק ברור לבנייה.</td><td>כותב Prompt V1 לפי התבנית.</td></tr>
+<tr><td>38–53</td><td>Generate V1→V2</td><td>מזכיר: שינוי אחד בכל פעם.</td><td>יוצר תמונה, בודק ומוסיף רכיב חסר.</td></tr>
+<tr><td>53–63</td><td>Improve V3</td><td>מלמד KEEP + CHANGE + GOAL לשיפור ממוקד.</td><td>מנסח Prompt משופר ויוצר גרסה נוספת.</td></tr>
+<tr><td>63–72</td><td>Concept Card</td><td>מראה כיצד לתעד את העולם ואת ה־Prompt שעבד.</td><td>בונה WORLD CONCEPT CARD.</td></tr>
+<tr><td>72–80</td><td>Boss</td><td>נותן Remix בלי לאבד את זהות העולם.</td><td>משנה מאפיין אחד ושומר על הזהות.</td></tr>
+<tr><td>80–90</td><td>Gallery + Save</td><td>מנהל בדיקת זוגות, שינוי אחרון ושמירה.</td><td>מסביר מה השתנה בין ה־Prompts ושומר למפגש 2.</td></tr></table>
+<div class="card yellow" style="margin-top:12px"><b>ניהול זמן:</b> אם הכיתה מתעכבת, מצמצמים מספר גרסאות או קישוטים. לא מבטלים את ההשוואה בין Prompts, את השיפור, את השמירה ואת החיבור למפגש הבא.</div>
+</section>
+<section id="wow"><h2 class="section-title">✨ 0–18 דקות — פתיחת WOW, המשימה והרעיון לפני AI</h2>
+<div class="grid">
+<div class="card"><h3>0–5 | פתיחת WOW</h3>
+<p><b>המורה מציג:</b> שתי תמונות של SKYLAND — אחת שנוצרה מתיאור קצר מאוד ואחת מתיאור מפורט.</p>
+<p><b>שאל את הכיתה:</b> “שתיהן נוצרו ב־AI. למה לדעתכם התמונה השנייה קרובה יותר למה שרציתי?”</p>
+<p>אסוף תשובות על מקום, פרטים, צבע, סגנון ואווירה. עדיין אל תיתן את הנוסחה.</p></div>
+<div class="card"><h3>5–10 | המשימה</h3>
+<div class="quote">“היום נלמד איך לדבר עם AI בצורה מדויקת יותר. נתחיל מרעיון פשוט, ניצור תמונה, נבדוק מה חסר, ונשפר את ה־Prompt עד שהעולם שעל המסך יתקרב לעולם שיש לנו בראש.”</div>
+</div></div>
+<div class="card callout" style="margin-top:14px"><h3>10–18 | מלמדים את נוסחת הפרומפט</h3>
+<table><tr><th>רכיב</th><th>השאלה שהתלמיד שואל</th><th>SKYLAND</th></tr>
+<tr><td><b>WHAT</b></td><td>מה אני רוצה לראות?</td><td>עיר על איים מרחפים</td></tr>
+<tr><td><b>WHERE</b></td><td>איפה זה נמצא?</td><td>מעל ים של עננים</td></tr>
+<tr><td><b>DETAILS</b></td><td>אילו פרטים חייבים להופיע?</td><td>גשרים, מגדלים לבנים וכחולים, צמחייה צבעונית</td></tr>
+<tr><td><b>STYLE</b></td><td>איך אני רוצה שזה ייראה?</td><td>תלת־ממדי מצויר, צבעוני, אור בוקר, תחושת הרפתקה</td></tr></table>
+<p><b>בדיקת הבנה:</b> בקש מתלמיד לתת רעיון לעולם, והכיתה מפרקת אותו יחד ל־WHAT / WHERE / DETAILS / STYLE.</p></div>
+</section>
+<section class="card" style="border:2px solid #f59e0b;background:#fffaf0"><h2>🧭 הדרכה מעשית למדריך — בונים מול הכיתה</h2><p><b>מטרת ההדגמה:</b> המדריך בונה חלק אמיתי מהתוצר מול התלמידים. זהו scaffolding הוראתי שמיישם את עקרונות המפגש; אין צורך שהתלמידים יעתיקו את SKYLAND.</p><ol><li><b>פתחו Canva</b> ואת פרויקט MY WORLD. אמרו: “אני לא מבקש מה־AI לנחש; אני בונה לו הוראות.”</li><li>הקלידו WHAT בלבד וצרו V1. שאלו: מה חסר?</li><li>הוסיפו WHERE, צרו V2 והשוו ל־V1.</li><li>הוסיפו DETAILS + STYLE וצרו V3.</li><li><b>טעות מכוונת:</b> שנו כמה דברים יחד. שאלו למה קשה לדעת מה גרם לשיפור.</li><li>תקנו עם KEEP + CHANGE + GOAL ושינוי אחד.</li><li><b>בסיום על המסך:</b> V1, V2, V3 ו־WORLD CONCEPT CARD.</li></ol></section><section id="demo"><h2 class="section-title">👨‍🏫 18–30 דקות — הדגמה חיה: בונים פרומפט מול הכיתה</h2>
+<div class="card green"><h3>לפני שמתחילים</h3>
+<p>פתח את כלי יצירת התמונות הזמין בחשבון התלמיד. 🟡 שם הכלי והמיקום בממשק עשויים להשתנות לפי החשבון וההרשאות. אם כלי AI אינו זמין, השתמש במסלול 🔄 עם Elements ותמונות/נכסים קיימים כדי ללמד את אותה חשיבה של פירוט ובחירה.</p>
+<p><b>אל תקליד מראש Prompt מושלם.</b> התלמידים צריכים לראות את ארבעת הניסיונות ואת ההבדלים ביניהם.</p></div>
+<details open=""><summary>ניסיון 1 — מה? (WHAT) בלבד</summary>
+<div class="prompt">עיר על איים מרחפים.</div>
+<p><b>לחץ Generate / צור</b> והצג את התוצאה בלי לתקן אותה.</p>
+<p><b>שאל:</b> “מה ה־AI היה צריך לנחש לבד?” “האם אמרנו לו איפה העיר?” “האם אמרנו איך היא צריכה להיראות?”</p>
+<p><b>המסר:</b> Prompt קצר יכול לעבוד, אבל הוא משאיר הרבה החלטות ל־AI.</p></details>
+<details open=""><summary>ניסיון 2 — מוסיפים מקום (WHERE)</summary>
+<div class="prompt">עיר על איים מרחפים מעל ים של עננים.</div>
+<p>צור שוב והשווה לתמונה הראשונה.</p>
+<p><b>שאל:</b> “מה השתנה רק בגלל שהוספנו את המקום?”</p>
+<p><b>על הלוח:</b> WHAT + WHERE ✓</p></details>
+<details open=""><summary>ניסיון 3 — מוסיפים פרטים (DETAILS)</summary>
+<div class="prompt">עיר על איים מרחפים מעל ים של עננים, גשרים מחברים בין האיים, מגדלים לבנים וכחולים וצמחייה צבעונית.</div>
+<p>צור שוב. בקש מהתלמידים למצוא אילו פרטים מה־Prompt אכן הופיעו ואילו לא.</p>
+<p><b>שאל:</b> “איזה פרט עזר לתמונה להפוך ל־SKYLAND שלנו ולא לעיר מרחפת אקראית?”</p></details>
+<details open=""><summary>ניסיון 4 — מוסיפים סגנון (STYLE)</summary>
+<div class="prompt">עיר על איים מרחפים מעל ים של עננים, גשרים מחברים בין האיים, מגדלים לבנים וכחולים וצמחייה צבעונית, בסגנון תלת־ממדי מצויר וצבעוני, תאורת בוקר רכה ותחושת הרפתקה.</div>
+<p>צור פעם רביעית והצג את ארבע התוצאות זו לצד זו.</p>
+<p><b>שאל:</b> “איזו תוספת שינתה הכי הרבה?” “איזה Prompt נתן ל־AI הכי פחות מקום לנחש?”</p></details>
+<div class="card callout" style="margin-top:14px"><b>עצירת מדריך:</b> בשלב הזה אל תמשיך לשפר את SKYLAND. המטרה היא שהתלמידים יעשו את התהליך בעצמם. ההדגמה צריכה להראות <b>START → GENERATE → LOOK → DECIDE → CHANGE</b>.</div>
+</section>
+<section id="prompt"><h2 class="section-title">🤖 תבניות פרומפט שהמורה נותן לתלמידים</h2>
+<div class="grid">
+<div class="card"><h3>תבנית 1 — בניית פרומפט</h3>
+<div class="prompt">WHAT: אני רוצה לראות ________
+WHERE: זה נמצא ב/על/בתוך ________
+DETAILS: חייבים להופיע ________, ________, ________
+STYLE: אני רוצה סגנון ________, צבעים ________, אווירה ________</div>
+<p>אחרי שממלאים — מחברים למשפט אחד ומייצרים.</p></div>
+<div class="card"><h3>תבנית 2 — שיפור תוצאה</h3>
+<div class="prompt">KEEP — מה אני רוצה לשמור?
+CHANGE — מה בדיוק אני רוצה לשנות?
+GOAL — למה אני משנה את זה?</div>
+<p><b>דוגמה:</b> שמור על האיים המרחפים והצבעים הכחולים. שנה את התאורה לשעת שקיעה. המטרה היא ליצור תחושה מסתורית יותר.</p></div>
+</div>
+<div class="card yellow" style="margin-top:14px"><h3>עברית קודם</h3>
+<p>התלמיד מנסח קודם בעברית כדי להבין את הבקשה שלו. אם הכלי שבו משתמשים מפיק תוצאה טובה יותר באנגלית, אפשר לתת גרסה אנגלית מוכנה רק לאחר שהתלמיד מבין מה היא אומרת.</p>
+<p><b>דוגמת SKYLAND באנגלית:</b></p>
+<div class="prompt ltr">A futuristic city built on floating islands above a sea of clouds. Bridges connect the islands, blue and white towers, colorful vegetation, soft morning light, adventurous and uplifting mood, stylized colorful 3D cartoon world, wide establishing view.</div></div>
+</section>
+<section id="work"><h2 class="section-title">🛠️ 30–72 דקות — התלמידים עובדים: פרומפט V1 → V2 → V3</h2>
+<details open=""><summary>30–38 | תכנון — לפני יצירה</summary>
+<p><b>הוראת המורה:</b> “עדיין לא לוחצים Generate. קודם בונים את הבקשה.”</p>
+<ul><li>שם זמני לעולם.</li><li>WHAT — מה רואים?</li><li>WHERE — איפה?</li><li>DETAILS — לפחות 3 פרטים.</li><li>STYLE — סגנון/צבע/אווירה.</li></ul>
+<p><b>Planning Check:</b> המדריך עובר במהירות. אם תלמיד אינו יכול להסביר את ארבעת החלקים, הוא עדיין לא עובר ליצירה.</p></details>
+<details open=""><summary>38–45 | פרומפט V1 — יוצרים גרסה ראשונה</summary>
+<p>התלמיד מחבר את ארבעת החלקים ל־Prompt אחד ומייצר תמונה.</p>
+<p><b>המורה שואל בזמן הסבב:</b> “איזה חלק מה־Prompt אתה כבר רואה בתמונה?” “איזה חלק ה־AI פספס?”</p>
+<p><b>אסור בשלב הזה:</b> למחוק מיד תוצאה שלא אהבנו. שומרים אותה להשוואה.</p></details>
+<details open=""><summary>45–53 | פרומפט V2 — משנים דבר אחד</summary>
+<p>התלמיד בוחר בעיה אחת בלבד: מקום לא ברור, פרט חסר, סגנון לא מתאים או אווירה לא נכונה.</p>
+<p><b>הוראת המורה:</b> “שנה דבר אחד כדי שנוכל לדעת מה גרם להבדל.”</p>
+<p>יוצרים V2 ומשווים ל־V1.</p></details>
+<details open=""><summary>53–63 | פרומפט V3 — שומרים + משנים + מטרה</summary>
+<p>התלמיד מנסח שיפור ממוקד:</p>
+<div class="prompt">KEEP: ________
+CHANGE: ________
+GOAL: ________</div>
+<p>יוצרים V3. התלמיד בוחר איזו גרסה מייצגת הכי טוב את העולם שלו ומסביר <b>למה</b>.</p></details>
+<details open=""><summary>63–72 | כרטיס קונספט לעולם</summary>
+<p>באותו פרויקט Canva יוצרים כרטיס שמכיל לפחות:</p>
+<ul><li>שם העולם.</li><li>התמונה שנבחרה.</li><li>משפט אחד שמתאר את העולם.</li><li>WHAT + WHERE + DETAILS + STYLE.</li><li>ה־Prompt שעבד הכי טוב.</li><li>“מה שיניתי בין הגרסאות ולמה?”</li></ul>
+<p><b>התוצר אינו רק פוסטר.</b> הוא צריך להוכיח שהתלמיד יודע להסביר את תהליך בניית ה־Prompt.</p></details>
+</section>
+<section id="boss"><h2 class="section-title">🏆 72–80 דקות — אתגר הבוס</h2><div class="card yellow"><h3>רמיקס בלי לאבד את הזהות</h3><p><b>המשימה:</b> צור Prompt חדש שמשנה מאפיין אחד משמעותי — למשל שעה ביום, מזג אוויר או סגנון חזותי — אבל שומר על הזהות של העולם.</p><p><b>לפני Generate:</b> התלמיד חייב לומר למדריך/לחבר מה הוא שומר ומה הוא משנה.</p><p><b>בדיקת הצלחה:</b> האם מי שמכיר את העולם עדיין מזהה שזה אותו עולם?</p><p><b>Super Boss:</b> כתוב Prompt קצר יותר שמצליח לשמור על אותה זהות. אילו מילים היו Must Have ואילו Nice to Have?</p></div></section>
+<section id="gallery"><h2 class="section-title">🖼️ 80–90 דקות — גלריה, הסבר ושמירה</h2><div class="card"><p><b>עובדים בזוגות.</b> כל תלמיד מציג V1 ותמונה סופית, אבל לפני שהוא מסביר — בן הזוג מנסה לזהות מה השתנה.</p><p><b>שלוש שאלות חובה:</b></p><ul><li>איזה שינוי עשית ב־Prompt?</li><li>מה השתנה בתמונה בעקבותיו?</li><li>מה היית משנה אם היה לך ניסיון נוסף?</li></ul><p><b>משוב מומלץ:</b> “אני רואה שהמילים ________ גרמו ל־________.” / “כדי לדייק יותר הייתי מוסיף ________.”</p><p><b>אין דירוג יופי:</b> בודקים בהירות, שליטה ב־Prompt, יכולת השוואה ושיפור.</p></div></section>
+<section id="rescue"><h2 class="section-title">🆘 ערכת הצלה למדריך — בעיות אופייניות בשיעור פרומפט</h2>
+<table><tr><th>מה המורה רואה</th><th>מה אומרים/עושים</th></tr>
+<tr><td>“אין לי רעיון לעולם”</td><td>תן 3 פתיחות בלבד: עיר במקום בלתי אפשרי / עולם שבו חוק טבע השתנה / מקום שחי בתוך משהו אחר. התלמיד בוחר וממשיך.</td></tr>
+<tr><td>Prompt של 2–3 מילים</td><td>אל תתקן עבורו. שאל ארבע שאלות: WHAT? WHERE? אילו 3 DETAILS? איזה STYLE?</td></tr>
+<tr><td>Prompt ארוך אבל מבולגן</td><td>סמן יחד את ארבעת החלקים. הסר מידע שאינו תורם לתמונה ושמור את הפרטים החשובים.</td></tr>
+<tr><td>AI מתעלם מפרט חשוב</td><td>בקש מהתלמיד לזהות את הפרט החשוב, לנסח אותו בצורה ברורה יותר ולבדוק שוב. שינוי אחד בכל ניסיון.</td></tr>
+<tr><td>התוצאה יפה אבל לא קשורה לרעיון</td><td>חזור ל־WHAT + WHERE. שאל: “מה בתמונה מוכיח שזה העולם שלך?”</td></tr>
+<tr><td>כל הגרסאות כמעט זהות</td><td>בחר רכיב אחד לשינוי ברור: STYLE, תאורה, מזג אוויר, נקודת מבט או פרט מרכזי — ואז השווה.</td></tr>
+<tr><td>התלמיד משנה הכול בכל ניסיון</td><td>עצור. השתמש ב־KEEP + CHANGE + GOAL. חייבים לדעת מה נשאר קבוע.</td></tr>
+<tr><td>כלי 🟡 AI חסום</td><td>עבור ל־🔄 Elements: התלמיד בונה קומפוזיציה ידנית לפי WHAT + WHERE + DETAILS + STYLE ומסביר אילו מילות Prompt היו מנחות אותו.</td></tr>
+<tr><td>תלמיד סיים מהר</td><td>Boss + Super Boss: Remix ושכתוב Prompt קצר יותר בלי לאבד זהות.</td></tr>
+<tr><td>הכיתה מאחרת</td><td>עוצרים אחרי V2, אבל לא מוותרים על Compare → Explain → Save.</td></tr></table>
+</section>
+<section id="success"><h2 class="section-title">✅ רשימת בדיקה להצלחה — מה צריך להיות נכון בסוף השיעור?</h2>
+<ul class="check">
+<li>☐ התלמיד יצר לפחות שתי גרסאות מתוך Prompts שונים.</li>
+<li>☐ הוא יכול לזהות בתוך ה־Prompt שלו WHAT + WHERE + DETAILS + STYLE.</li>
+<li>☐ הוא יכול להסביר שינוי אחד שעשה ב־Prompt ומה קרה לתמונה בעקבותיו.</li>
+<li>☐ הוא לא הסתפק בתוצאה הראשונה אלא ביצע Compare → Improve.</li>
+<li>☐ הוא השלים WORLD CONCEPT CARD עם התמונה וה־Prompt שנבחרו.</li>
+<li>☐ התוצר נשמר באותו פרויקט Canva ונגיש למפגש הבא.</li>
+</ul>
+<div class="card callout"><h3>מדד ההצלחה של המדריך</h3><p>אם תלמיד יכול להראות שתי תמונות ולומר <b>“שיניתי את המילים האלה ב־Prompt, ולכן קיבלתי את ההבדל הזה”</b> — הוא הבין את לב השיעור.</p></div>
+<div class="next"><b>שמירה + NEXT</b><br/>מפגש 02: <b>בונים את העולם</b> — פותחים את תמונת העולם ואת ה־WORLD CONCEPT CARD מהיום וממשיכים מהם ל־WORLD KIT.</div></section>
+<!-- qa4-training --><section class="card"><h2>🎓 הכשרת המדריך — מקורות Canva רשמיים</h2>
+<ul><li><a href="https://www.canva.com/education/teaching-resources/" rel="noopener" target="_blank">Canva Education — Teaching Resources</a> — מרכז ההדרכה הרשמי למורים; מומלץ לבדוק כאן שינויים בכלים ובהרשאות לפני השיעור.</li><li><a href="https://www.canva.com/education/teaching-resources/classroom-ai-guides/" rel="noopener" target="_blank">Canva — AI Classroom Guides</a> — הכנה לשימוש אחראי בכלי AI/יצירה בכיתה ולבדיקת זמינות הכלים.</li></ul>
+<p><b>בדיקת הרשאות:</b> כלי AI לתלמידים עשויים להיות מוגבלים לפי הגדרות בית הספר. בדקו בחשבון תלמיד אמיתי לפני השיעור.</p></section></main></div><a class="topbtn" href="#top">↑ למעלה</a><section class="v11-backpack"><h2>🎒 SKYLAND Backpack · מה כבר בנינו?</h2><div class="v11-chips"><span class="v11-chip">✓ WORLD CONCEPT CARD</span></div><p>כל התוצרים שנצברו עד עכשיו במסע.</p></section><section class="v11-artifact"><div class="v11-episode">📦 התוצר של הפרק</div><h2>כרטיס קונספט לעולם (WORLD CONCEPT CARD)</h2><p>התוצר הזה מצטרף ל־SKYLAND וישמש כחומר גלם בפרק הבא: WORLD KIT.</p></section><script id="v11-teacher-js">(()=>{const b=document.querySelector('.v11-present-btn');if(!b)return;b.onclick=()=>{document.body.classList.toggle('v11-presenting');b.textContent=document.body.classList.contains('v11-presenting')?'↩️ יציאה מהקרנה':'🖥️ מצב הקרנה'}})();</script><script src="assets/skyland-hebrew-ui.js"></script>
+</body></html>
