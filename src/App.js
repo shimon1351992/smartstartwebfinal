@@ -1273,7 +1273,7 @@ function Home() {
 
 function App() {
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <Routes>
         {/* 🌐 Root is the High-Converting Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
