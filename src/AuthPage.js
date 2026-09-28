@@ -250,6 +250,7 @@ function AuthPage() {
       const res = await fetch(`${serverUrl}/api/teachers/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(3000),
         body: JSON.stringify({
           fullName: regFullName.trim(),
           username: regUsername.trim(),
