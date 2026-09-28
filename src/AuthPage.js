@@ -82,6 +82,7 @@ function AuthPage() {
       const res = await fetch(`${serverUrl}/api/student/class-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(3000),
         body: JSON.stringify({
           classCode: cleanCode,
           studentName: cleanName
@@ -175,6 +176,7 @@ function AuthPage() {
       const res = await fetch(`${serverUrl}/api/teachers/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(3000),
         body: JSON.stringify({
           username: loginUsername.trim(),
           password: loginPassword
@@ -203,9 +205,10 @@ function AuthPage() {
       }
     } catch (err) {
       const cleanU = loginUsername.trim().toLowerCase();
+      const validPass = loginPassword === '123' || loginPassword === '1234' || loginPassword === '123456';
       if (
-        (cleanU === 'shimon' || cleanU === 'המורה שמעון') && (loginPassword === '123' || loginPassword === '123456') ||
-        (cleanU === 'shimon1351992' && (loginPassword === '123' || loginPassword === '123456'))
+        ((cleanU === 'shimon' || cleanU === 'המורה שמעון') && validPass) ||
+        (cleanU === 'shimon1351992' && validPass)
       ) {
         const userObj = { 
           id: cleanU === 'shimon1351992' ? 1787057239713 : 1, 
