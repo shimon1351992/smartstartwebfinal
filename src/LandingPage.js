@@ -25,8 +25,8 @@ import { TURTLE_HERO, SMARTHOUSE_HERO, CAR_4WD_HERO } from './projectImages';
 import './LandingPage.css';
 
 // 🖼️ High-Res Custom Background Assets
-const BG_MAIN = encodeURI('/רקע לראש הדף.jpg');
-const BG_TRACKS = encodeURI('/רקע לכרטיסיות.jpg');
+const BG_MAIN = encodeURI('/bg_header.jpg');
+const BG_TRACKS = encodeURI('/bg_cards.jpg');
 
 // 🎬 Dynamic Multi-Robot & Smart Home Video Showcase Data
 const HERO_VIDEOS = [
