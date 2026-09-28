@@ -8,22 +8,15 @@ export async function loadEsptoolLibrary() {
     return window.esptooljs || { ESPLoader: window.ESPLoader, Transport: window.Transport };
   }
 
-  // Load dynamically if not loaded from index.html
-  return new Promise((resolve, reject) => {
-    const existingScript = document.querySelector('script[src*="esptool-js"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => {
-        resolve(window.esptooljs || { ESPLoader: window.ESPLoader, Transport: window.Transport });
-      });
-      existingScript.addEventListener('error', reject);
-    } else {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/esptool-js@0.5.4/bundle.js';
-      script.onload = () => resolve(window.esptooljs || { ESPLoader: window.ESPLoader, Transport: window.Transport });
-      script.onerror = () => reject(new Error('Failed to load esptool-js library from CDN'));
-      document.head.appendChild(script);
-    }
-  });
+  try {
+    // Dynamically import the ES module bundle from CDN without bundling
+    const esptool = await import(/* webpackIgnore: true */ 'https://unpkg.com/esptool-js@0.5.4/bundle.js');
+    window.esptooljs = esptool;
+    return esptool;
+  } catch (err) {
+    console.error('Failed to import esptool-js:', err);
+    throw new Error('Failed to load esptool-js library from CDN');
+  }
 }
 
 /**

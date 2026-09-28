@@ -1,8 +1,7 @@
 {
   "name": "smartstartweb",
-  "version": "0.1.0",
   "private": true,
-  "homepage": "https://shimon1351992.github.io/smartstartwebfinal",
+  "homepage": "/",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
