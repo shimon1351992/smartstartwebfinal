@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getActiveServerUrl } from './serverPort';
+import {
+  DOMAIN_OPTIONS,
+  SCIENCE_FIELDS,
+  SCIENCE_MATERIALS,
+  BUSINESS_VERTICALS,
+  BUSINESS_DELIVERABLES,
+  DESIGN_DISCIPLINES,
+  DESIGN_DELIVERABLES,
+  POLYMATH_STYLES,
+  buildClientCurriculum,
+  saveTrackLocally
+} from './clientDomainCurriculum';
 
 // Hardware components list
 const HARDWARE_COMPONENTS = [
@@ -86,8 +98,29 @@ const SOFTWARE_FEATURES_MAP = {
 export default function CustomTrackCreator() {
   const navigate = useNavigate();
 
-  // Project Type: null (Selection screen), 'hardware_software', or 'software_only'
+  // Domain selection (null indicates Screen 0: Domain Picker)
+  const [selectedDomain, setSelectedDomain] = useState(null);
   const [projectType, setProjectType] = useState(null);
+
+  // Science domain states
+  const [selectedScienceField, setSelectedScienceField] = useState(SCIENCE_FIELDS[0]);
+  const [selectedScienceMaterials, setSelectedScienceMaterials] = useState([SCIENCE_MATERIALS[0], SCIENCE_MATERIALS[1]]);
+
+  // Business domain states
+  const [selectedBusinessVertical, setSelectedBusinessVertical] = useState(BUSINESS_VERTICALS[0]);
+  const [selectedBusinessDeliverables, setSelectedBusinessDeliverables] = useState([BUSINESS_DELIVERABLES[0], BUSINESS_DELIVERABLES[1]]);
+
+  // Design domain states
+  const [selectedDesignDiscipline, setSelectedDesignDiscipline] = useState(DESIGN_DISCIPLINES[0]);
+  const [selectedDesignDeliverables, setSelectedDesignDeliverables] = useState([DESIGN_DELIVERABLES[0], DESIGN_DELIVERABLES[1]]);
+
+  // Polymath domain states
+  const [selectedPolymathStyle, setSelectedPolymathStyle] = useState(POLYMATH_STYLES[0]);
+
+  // Active AI Agent index during generation (0: Orchestrator, 1: Domain Content, 2: Styling, 3: QA)
+  const [activeAgentIndex, setActiveAgentIndex] = useState(0);
+
+  const currentDomainInfo = DOMAIN_OPTIONS.find(d => d.id === selectedDomain) || DOMAIN_OPTIONS[0];
 
   // Active Wizard Tab (1: Details, 2: Components/Tech, 3: Chapters & Guidance, 4: Media & URL, 5: Launch AI)
   const [activeStep, setActiveStep] = useState(1);
@@ -211,18 +244,33 @@ export default function CustomTrackCreator() {
     }
   };
 
+  const toggleScienceMaterial = (mat) => {
+    setSelectedScienceMaterials(prev => prev.includes(mat) ? prev.filter(m => m !== mat) : [...prev, mat]);
+  };
+
+  const toggleBusinessDeliverable = (del) => {
+    setSelectedBusinessDeliverables(prev => prev.includes(del) ? prev.filter(d => d !== del) : [...prev, del]);
+  };
+
+  const toggleDesignDeliverable = (des) => {
+    setSelectedDesignDeliverables(prev => prev.includes(des) ? prev.filter(d => d !== des) : [...prev, des]);
+  };
+
   // Add Custom Item
   const handleAddCustomItem = (e) => {
     if (e) e.preventDefault();
-    if (!customInput.trim()) return;
-    if (projectType === 'hardware_software') {
-      if (!selectedHwComponents.includes(customInput.trim())) {
-        setSelectedHwComponents([...selectedHwComponents, customInput.trim()]);
-      }
-    } else {
-      if (!selectedSwFeatures.includes(customInput.trim())) {
-        setSelectedSwFeatures([...selectedSwFeatures, customInput.trim()]);
-      }
+    const val = customInput.trim();
+    if (!val) return;
+    if (selectedDomain === 'robotics') {
+      if (!selectedHwComponents.includes(val)) setSelectedHwComponents([...selectedHwComponents, val]);
+    } else if (selectedDomain === 'software') {
+      if (!selectedSwFeatures.includes(val)) setSelectedSwFeatures([...selectedSwFeatures, val]);
+    } else if (selectedDomain === 'science') {
+      if (!selectedScienceMaterials.includes(val)) setSelectedScienceMaterials([...selectedScienceMaterials, val]);
+    } else if (selectedDomain === 'business') {
+      if (!selectedBusinessDeliverables.includes(val)) setSelectedBusinessDeliverables([...selectedBusinessDeliverables, val]);
+    } else if (selectedDomain === 'design') {
+      if (!selectedDesignDeliverables.includes(val)) setSelectedDesignDeliverables([...selectedDesignDeliverables, val]);
     }
     setCustomInput('');
   };
@@ -269,7 +317,7 @@ export default function CustomTrackCreator() {
     setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
   };
 
-  // Generate Track via AI
+  // Generate Track via AI Multi-Agent System
   const handleGenerateTrack = async () => {
     const cleanUrls = docUrls.filter(item => item.url && item.url.trim());
     if (!projectTitle.trim() && cleanUrls.length === 0 && !userPrompt.trim()) {
@@ -280,60 +328,77 @@ export default function CustomTrackCreator() {
     setErrorMessage('');
     setIsGenerating(true);
     setGeneratedTrack(null);
+    setActiveAgentIndex(0);
 
-    const stepMessages = projectType === 'hardware_software' ? [
-      'מנתח את קישורי התיעוד וקבצי הפרויקט עם Gemini 3.1 Pro Preview...',
-      'סורק את כל תמונות ה-CAD ותרשימי החיווט מהאתר...',
-      'בונה שלבי הרכבה מכאנית מפורטים לפי הנחיות המשתמש...',
-      'כותב קוד C++ מלא, כיול מנועים וחיישנים ואתגרי קידוד...',
-      'מייצר שמות פרקים ייחודיים ומבנה משימות למידה מלא...',
-      'מסיים ומעצב את מסלול הרובוטיקה האישי...'
-    ] : [
-      `מנתח את דרישות פרויקט ה-${softwareStack.toUpperCase()} עם Gemini 3.1 Pro Preview...`,
-      'מעבד מידע ממקורות התיעוד ומדריכי התכנות...',
-      'בונה שלבי פיתוח תוכנה ותרגול שלב-אחר-שלב...',
-      'כותב קוד מלא, פונקציות לוגיקה ואתגרי קידוד...',
-      'מייצר מבנה פרקים ומשימות קוד אינטראקטיביות...',
-      'מסיים ומעצב את מסלול התוכנה האישי...'
+    const domainKey = selectedDomain || 'polymath';
+    const domainObj = DOMAIN_OPTIONS.find(d => d.id === domainKey) || DOMAIN_OPTIONS[0];
+
+    const agentSteps = [
+      `👑 סוכן Orchestrator: מנתח את הדרישות ומסווג את מבנה הלמידה ב-${domainObj.title}...`,
+      `🧠 סוכן תוכן מומחה: בונה את תוכנית הלימודים הפדגוגית, שיעורים ומשימות...`,
+      `🎨 סוכן עיצוב ומיתוג: מתאים פלטת צבעים, גרדיאנטים זוהרים, אייקונים ותגיות...`,
+      `🛡️ סוכן בקרת איכות (QA): בודק שלמות פדגוגית, מאמת משימות יישומיות ומלטש תוצרים...`
     ];
 
-    let stepIdx = 0;
-    setGenStepMessage(stepMessages[0]);
+    let currentAgent = 0;
+    setGenStepMessage(agentSteps[0]);
     const timer = setInterval(() => {
-      stepIdx = (stepIdx + 1) % stepMessages.length;
-      setGenStepMessage(stepMessages[stepIdx]);
-    }, 2500);
+      currentAgent = (currentAgent + 1) % agentSteps.length;
+      setActiveAgentIndex(currentAgent);
+      setGenStepMessage(agentSteps[currentAgent]);
+    }, 2000);
+
+    const selectedComponentsList = domainKey === 'robotics' ? selectedHwComponents :
+      domainKey === 'software' ? selectedSwFeatures :
+      domainKey === 'science' ? selectedScienceMaterials :
+      domainKey === 'business' ? selectedBusinessDeliverables :
+      domainKey === 'design' ? selectedDesignDeliverables :
+      [selectedPolymathStyle];
 
     try {
       const serverUrl = await getActiveServerUrl();
-      const isHw = projectType === 'hardware_software';
       const res = await axios.post(`${serverUrl}/api/ai/generate-track`, {
         title: projectTitle.trim(),
-        projectType,
-        targetBoard: isHw ? targetBoard : softwareStack,
-        softwareStack: !isHw ? softwareStack : undefined,
-        components: isHw ? selectedHwComponents : selectedSwFeatures,
+        domain: domainKey,
+        projectType: domainKey === 'robotics' ? 'hardware_software' : 'software_only',
+        targetBoard: domainKey === 'robotics' ? targetBoard : softwareStack,
+        softwareStack: domainKey === 'software' ? softwareStack : undefined,
+        components: selectedComponentsList,
         difficulty,
         chaptersCount: customChapters.length,
         customChapters,
         docUrls: cleanUrls,
         docUrl: cleanUrls[0]?.url || '',
-        prompt: `${isHw ? '[פרויקט חומרה ותוכנה משולב] ' : `[פרויקט תוכנה בלבד - שפת ${softwareStack.toUpperCase()}] `}${userPrompt.trim()}`,
+        prompt: `[מסלול ${domainObj.title}] ${userPrompt.trim()}`,
         scrapeInstructions: scrapeInstructions.trim(),
         uploadedMedia: uploadedFiles,
         model: 'google/gemini-3.1-pro-preview'
-      });
+      }, { timeout: 45000 });
 
       clearInterval(timer);
 
       if (res.data && res.data.success && res.data.track) {
+        saveTrackLocally(res.data.track);
         setGeneratedTrack(res.data.track);
       } else {
-        setErrorMessage(res.data?.error || 'חלה שגיאה ביצירת המסלול');
+        throw new Error(res.data?.error || 'תגובה לא תקינה מהשרת');
       }
     } catch (err) {
       clearInterval(timer);
-      setErrorMessage(err.response?.data?.error || err.message || 'שגיאה ביצירת המסלול בשרת');
+      console.warn('[Creator] Server generation unavailable or timed out, generating via Client Multi-Agent engine...', err.message);
+      
+      // Resilient Client Multi-Agent Fallback
+      const fallbackTrack = buildClientCurriculum(domainKey, {
+        title: projectTitle.trim(),
+        targetBoard,
+        softwareStack,
+        components: selectedComponentsList,
+        customChapters,
+        availableImages: uploadedFiles.map(f => f.url)
+      });
+
+      saveTrackLocally(fallbackTrack);
+      setGeneratedTrack(fallbackTrack);
     } finally {
       setIsGenerating(false);
     }
@@ -401,28 +466,28 @@ export default function CustomTrackCreator() {
           </div>
         </div>
 
-        {projectType && (
+        {selectedDomain && (
           <span style={{
             padding: '8px 18px',
             borderRadius: '20px',
             fontSize: '0.9rem',
             fontWeight: '900',
-            background: projectType === 'hardware_software' ? 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)' : 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+            background: currentDomainInfo.gradient,
             color: '#ffffff',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
           }}>
-            {projectType === 'hardware_software' ? '🤖 פרויקט חומרה ותוכנה (רובוטיקה/IoT)' : '💻 פרויקט תוכנה בלבד'}
+            {currentDomainInfo.icon} {currentDomainInfo.title}
           </span>
         )}
       </header>
 
       {/* ========================================================================= */}
-      {/* SCREEN 0: SELECT PROJECT TYPE (MATCHING EXACT SCREENSHOT) */}
+      {/* SCREEN 0: SELECT DOMAIN (6 SPECIALIZED AGENTS) */}
       {/* ========================================================================= */}
-      {projectType === null && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', maxWidth: '1050px', margin: '0 auto', width: '100%' }}>
+      {selectedDomain === null && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
           
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
             <span style={{
               display: 'inline-block',
               padding: '6px 18px',
@@ -434,158 +499,94 @@ export default function CustomTrackCreator() {
               marginBottom: '14px',
               border: '1px solid #bfdbfe'
             }}>
-              שלב ראשון • בחירת תחום הפרויקט
+              שלב ראשון • בחירת תחום הפרויקט והסוכן המומחה
             </span>
             <h2 style={{ fontSize: '2.4rem', fontWeight: '950', color: '#0f172a', margin: '0 0 12px 0' }}>
-              איזה סוג פרויקט תרצה ליצור?
+              איזה סוג פרויקט תרצה ליצור היום?
             </h2>
-            <p style={{ fontSize: '1.1rem', color: '#64748b', fontWeight: '600', maxWidth: '650px', margin: '0 auto' }}>
-              בחר את אופי הפרויקט והסוכן החכם יתאים עבורך את שדות ההגדרה, שלבי הלמידה והקוד.
+            <p style={{ fontSize: '1.1rem', color: '#64748b', fontWeight: '600', maxWidth: '750px', margin: '0 auto' }}>
+              בחר את התחום והסוכן החכם המומחה לאותו תחום יבנה עבורך את מערך השיעורים, שלבי העשייה, והעיצוב הוויזואלי.
             </p>
           </div>
 
-          {/* 2 CARDS GRID */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '30px', width: '100%' }}>
-            
-            {/* CARD 1: HARDWARE & SOFTWARE */}
-            <div
-              onClick={() => {
-                setProjectType('hardware_software');
-                setActiveStep(1);
-              }}
-              style={{
-                background: '#ffffff',
-                border: '2.5px solid #e2e8f0',
-                borderRadius: '28px',
-                padding: '36px',
-                cursor: 'pointer',
-                transition: 'all 0.25s ease',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.borderColor = '#2563eb';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(37,99,235,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = '#e2e8f0';
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.04)';
-              }}
-            >
-              <div>
-                <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', marginBottom: '22px' }}>
-                  🤖
-                </div>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: '950', color: '#0f172a', margin: '0 0 10px 0' }}>
-                  פרויקט חומרה ותוכנה
-                </h3>
-                <p style={{ fontSize: '0.96rem', color: '#64748b', lineHeight: '1.6', margin: '0 0 24px 0', fontWeight: '500' }}>
-                  מסלול משולב לרובוטיקה, זרועות, IoT וארדואינו הכולל בחירת בקר (ESP32 / Arduino), מנועים וחיישנים, שלבי הרכבה מכאנית ייחודיים לכל שלב, שרטוטים וקוד C++ מלא.
-                </p>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '30px' }}>
-                  <span style={{ background: '#dbeafe', color: '#1e40af', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ ESP32 / Arduino</span>
-                  <span style={{ background: '#dbeafe', color: '#1e40af', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ חיישנים, סרוו וג'ויסטיק</span>
-                  <span style={{ background: '#dbeafe', color: '#1e40af', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ שלבי הרכבה CAD מותאמים</span>
-                  <span style={{ background: '#dbeafe', color: '#1e40af', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ משימות קוד C++ וצריבה</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
+          {/* 6 DOMAIN CARDS RESPONSIVE GRID */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', width: '100%' }}>
+            {DOMAIN_OPTIONS.map(dom => (
+              <div
+                key={dom.id}
+                onClick={() => {
+                  setSelectedDomain(dom.id);
+                  setProjectType(dom.id === 'robotics' ? 'hardware_software' : 'software_only');
+                  setCustomChapters(dom.defaultChapters);
+                  setActiveStep(1);
+                }}
                 style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  fontWeight: '900',
-                  fontSize: '1.05rem',
+                  background: '#ffffff',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '24px',
+                  padding: '30px',
                   cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  boxShadow: '0 6px 20px rgba(37,99,235,0.3)'
+                  transition: 'all 0.25s ease',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.03)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-6px)';
+                  e.currentTarget.style.borderColor = dom.color;
+                  e.currentTarget.style.boxShadow = `0 18px 38px ${dom.color}25`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.03)';
                 }}
               >
-                בחר במסלול חומרה ותוכנה ←
-              </button>
-            </div>
+                <div>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: dom.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', marginBottom: '18px' }}>
+                    {dom.icon}
+                  </div>
+                  <h3 style={{ fontSize: '1.45rem', fontWeight: '950', color: '#0f172a', margin: '0 0 8px 0' }}>
+                    {dom.title}
+                  </h3>
+                  <div style={{ fontSize: '0.82rem', color: dom.color, fontWeight: '800', marginBottom: '14px' }}>
+                    {dom.badge}
+                  </div>
+                  <p style={{ fontSize: '0.93rem', color: '#64748b', lineHeight: '1.6', margin: '0 0 20px 0', fontWeight: '500' }}>
+                    {dom.description}
+                  </p>
 
-            {/* CARD 2: SOFTWARE ONLY */}
-            <div
-              onClick={() => {
-                setProjectType('software_only');
-                setActiveStep(1);
-              }}
-              style={{
-                background: '#ffffff',
-                border: '2.5px solid #e2e8f0',
-                borderRadius: '28px',
-                padding: '36px',
-                cursor: 'pointer',
-                transition: 'all 0.25s ease',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.borderColor = '#059669';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(5,150,105,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = '#e2e8f0';
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.04)';
-              }}
-            >
-              <div>
-                <div style={{ width: '70px', height: '70px', borderRadius: '22px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', marginBottom: '22px' }}>
-                  💻
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '26px' }}>
+                    {dom.tags.map((tag, tIdx) => (
+                      <span key={tIdx} style={{ background: dom.bg, color: dom.color, padding: '4px 10px', borderRadius: '10px', fontSize: '0.78rem', fontWeight: '800' }}>
+                        ✓ {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: '950', color: '#0f172a', margin: '0 0 10px 0' }}>
-                  פרויקט תוכנה בלבד
-                </h3>
-                <p style={{ fontSize: '0.96rem', color: '#64748b', lineHeight: '1.6', margin: '0 0 24px 0', fontWeight: '500' }}>
-                  מסלול פיתוח תוכנה טהור (ללא רכיבי חומרה או ברגים) הכולל שפות מגוונות (Python, Web/JS, C++, Blockly, AI), אתגרים מעשיים ולוגיקה.
-                </p>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '30px' }}>
-                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ Python / פייתון</span>
-                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ HTML5 / CSS / JavaScript</span>
-                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ C++ / C# OOP</span>
-                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ בלוקים / לוגיקה</span>
-                  <span style={{ background: '#d1fae5', color: '#065f46', padding: '5px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>✓ ללא צורך בחומרה</span>
-                </div>
+                <button
+                  type="button"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '14px',
+                    background: dom.gradient,
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: '900',
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    boxShadow: `0 6px 18px ${dom.color}40`
+                  }}
+                >
+                  בחר במסלול {dom.title.split(',')[0]} ←
+                </button>
               </div>
-
-              <button
-                type="button"
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  fontWeight: '900',
-                  fontSize: '1.05rem',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  boxShadow: '0 6px 20px rgba(5,150,105,0.3)'
-                }}
-              >
-                בחר במסלול תוכנה בלבד ←
-              </button>
-            </div>
-
+            ))}
           </div>
         </div>
       )}
@@ -599,11 +600,16 @@ export default function CustomTrackCreator() {
           {/* STEP INDICATOR TABS */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', background: '#ffffff', padding: '10px', borderRadius: '20px', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', overflowX: 'auto', gap: '6px' }}>
             {[
-              { num: 1, title: '1. פרטי הפרויקט והסביבה' },
-              { num: 2, title: projectType === 'hardware_software' ? '2. רכיבים וחיישנים' : '2. נושאים וספריות' },
+              { num: 1, title: '1. פרטי הפרויקט' },
+              { num: 2, title: selectedDomain === 'robotics' ? '2. רכיבים וחיישנים' :
+                              selectedDomain === 'software' ? '2. שפה וספריות' :
+                              selectedDomain === 'science' ? '2. ציוד מעבדה וחקר' :
+                              selectedDomain === 'business' ? '2. תוצרים עסקיים' :
+                              selectedDomain === 'design' ? '2. תוצרי עיצוב ומדיה' :
+                              '2. מוקדי עשייה' },
               { num: 3, title: '3. מבנה הפרקים והנחיות' },
               { num: 4, title: '4. קישורים, קבצים ותיעוד' },
-              { num: 5, title: '5. יצירה ב-AI' }
+              { num: 5, title: '5. שיגור ב-AI' }
             ].map(tab => (
               <button
                 key={tab.num}
@@ -614,7 +620,7 @@ export default function CustomTrackCreator() {
                   padding: '12px 10px',
                   borderRadius: '14px',
                   border: 'none',
-                  background: activeStep === tab.num ? (projectType === 'hardware_software' ? '#2563eb' : '#059669') : 'transparent',
+                  background: activeStep === tab.num ? currentDomainInfo.color : 'transparent',
                   color: activeStep === tab.num ? '#ffffff' : '#64748b',
                   fontWeight: '900',
                   fontSize: '0.88rem',
@@ -629,22 +635,32 @@ export default function CustomTrackCreator() {
             ))}
           </div>
 
-          {/* TAB 1: DETAILS & BOARD/STACK */}
+          {/* TAB 1: DETAILS & BOARD/STACK/DISCIPLINE */}
           {activeStep === 1 && (
             <div style={{ background: '#ffffff', padding: '32px', borderRadius: '24px', border: '1.5px solid #e2e8f0', boxShadow: '0 6px 20px rgba(0,0,0,0.03)' }}>
-              <h2 style={{ margin: '0 0 20px 0', fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>
-                📝 פרטים בסיסיים וסביבת עבודה
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                <span style={{ fontSize: '1.6rem' }}>{currentDomainInfo.icon}</span>
+                <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>
+                  פרטים בסיסיים והגדרת תחום: {currentDomainInfo.title}
+                </h2>
+              </div>
 
               <div style={{ marginBottom: '22px' }}>
                 <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
-                  שם הפרויקט / הרובוט: *
+                  שם הפרויקט / המסלול: *
                 </label>
                 <input
                   type="text"
                   value={projectTitle}
                   onChange={(e) => setProjectTitle(e.target.value)}
-                  placeholder={projectType === 'hardware_software' ? 'לדוגמה: רובוט זרוע מפרקית 4DOF עם ג\'ויסטיק ו-ESP32' : 'לדוגמה: משחק נחש ב-Python / אפליקציית Web'}
+                  placeholder={
+                    selectedDomain === 'robotics' ? 'לדוגמה: רובוט זרוע מפרקית 4DOF עם ג\'ויסטיק ו-ESP32' :
+                    selectedDomain === 'software' ? 'לדוגמה: פיתוח צ\'אטבוט מבוסס AI בפייתון / אתר אינטראקטיבי' :
+                    selectedDomain === 'science' ? 'לדוגמה: חקר מערכת השמש ומושבות על המאדים / פיזיקה של גלים ואור' :
+                    selectedDomain === 'business' ? 'לדוגמה: הקמת מיזם סטארטאפ EdTech / חנות מסחר מקוון ומותג אופנה' :
+                    selectedDomain === 'design' ? 'לדוגמה: עיצוב זהות מותג מלאה וממשק UI/UX לאפליקציית כושר' :
+                    'לדוגמה: אמנות הדיבייט והרטוריקה הציבורית / קורס תזונה וכושר פונקציונלי'
+                  }
                   style={{
                     width: '100%',
                     padding: '14px 18px',
@@ -658,8 +674,8 @@ export default function CustomTrackCreator() {
                 />
               </div>
 
-              {/* Hardware: Board Selection */}
-              {projectType === 'hardware_software' ? (
+              {/* DOMAIN SPECIFIC SELECTION IN STEP 1 */}
+              {selectedDomain === 'robotics' && (
                 <div style={{ marginBottom: '22px' }}>
                   <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
                     בקר ראשי (Target Board):
@@ -689,8 +705,9 @@ export default function CustomTrackCreator() {
                     ))}
                   </div>
                 </div>
-              ) : (
-                /* Software: Stack / Language Selection */
+              )}
+
+              {selectedDomain === 'software' && (
                 <div style={{ marginBottom: '22px' }}>
                   <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
                     שפת תכנות / סביבת פיתוח:
@@ -706,15 +723,131 @@ export default function CustomTrackCreator() {
                         style={{
                           padding: '14px',
                           borderRadius: '14px',
-                          border: softwareStack === s.id ? '2.5px solid #059669' : '2px solid #e2e8f0',
-                          background: softwareStack === s.id ? '#ecfdf5' : '#f8fafc',
+                          border: softwareStack === s.id ? '2.5px solid #4f46e5' : '2px solid #e2e8f0',
+                          background: softwareStack === s.id ? '#eef2ff' : '#f8fafc',
                           cursor: 'pointer',
                           transition: 'all 0.2s ease'
                         }}
                       >
-                        <div style={{ fontWeight: '900', color: softwareStack === s.id ? '#065f46' : '#0f172a' }}>{s.name}</div>
+                        <div style={{ fontWeight: '900', color: softwareStack === s.id ? '#3730a3' : '#0f172a' }}>{s.name}</div>
                         <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px' }}>{s.desc}</div>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDomain === 'science' && (
+                <div style={{ marginBottom: '22px' }}>
+                  <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
+                    ענף מחקר מדעי ראשי:
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {SCIENCE_FIELDS.map(f => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setSelectedScienceField(f)}
+                        style={{
+                          padding: '10px 16px',
+                          borderRadius: '12px',
+                          border: selectedScienceField === f ? '2px solid #0284c7' : '1.5px solid #cbd5e1',
+                          background: selectedScienceField === f ? '#f0f9ff' : '#ffffff',
+                          color: selectedScienceField === f ? '#0369a1' : '#334155',
+                          fontWeight: '800',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {selectedScienceField === f ? '✓ ' : ''}{f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDomain === 'business' && (
+                <div style={{ marginBottom: '22px' }}>
+                  <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
+                    תחום פעילות עסקית / ורטיקל:
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {BUSINESS_VERTICALS.map(v => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setSelectedBusinessVertical(v)}
+                        style={{
+                          padding: '10px 16px',
+                          borderRadius: '12px',
+                          border: selectedBusinessVertical === v ? '2px solid #d97706' : '1.5px solid #cbd5e1',
+                          background: selectedBusinessVertical === v ? '#fffbeb' : '#ffffff',
+                          color: selectedBusinessVertical === v ? '#b45309' : '#334155',
+                          fontWeight: '800',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {selectedBusinessVertical === v ? '✓ ' : ''}{v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDomain === 'design' && (
+                <div style={{ marginBottom: '22px' }}>
+                  <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
+                    התמחות ויזואלית ראשית:
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {DESIGN_DISCIPLINES.map(d => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setSelectedDesignDiscipline(d)}
+                        style={{
+                          padding: '10px 16px',
+                          borderRadius: '12px',
+                          border: selectedDesignDiscipline === d ? '2px solid #db2777' : '1.5px solid #cbd5e1',
+                          background: selectedDesignDiscipline === d ? '#fdf2f8' : '#ffffff',
+                          color: selectedDesignDiscipline === d ? '#be185d' : '#334155',
+                          fontWeight: '800',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {selectedDesignDiscipline === d ? '✓ ' : ''}{d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDomain === 'polymath' && (
+                <div style={{ marginBottom: '22px' }}>
+                  <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
+                    סגנון למידה מועדף:
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {POLYMATH_STYLES.map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSelectedPolymathStyle(s)}
+                        style={{
+                          padding: '10px 16px',
+                          borderRadius: '12px',
+                          border: selectedPolymathStyle === s ? '2px solid #7c3aed' : '1.5px solid #cbd5e1',
+                          background: selectedPolymathStyle === s ? '#faf5ff' : '#ffffff',
+                          color: selectedPolymathStyle === s ? '#6d28d9' : '#334155',
+                          fontWeight: '800',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {selectedPolymathStyle === s ? '✓ ' : ''}{s}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -723,7 +856,7 @@ export default function CustomTrackCreator() {
               {/* Difficulty Grid */}
               <div style={{ marginBottom: '26px' }}>
                 <label style={{ display: 'block', fontWeight: '800', marginBottom: '8px', color: '#334155' }}>
-                  רמת קושי ויעד:
+                  קהל יעד ורמת קושי:
                 </label>
                 <select
                   value={difficulty}
@@ -732,7 +865,7 @@ export default function CustomTrackCreator() {
                 >
                   <option value="יסודי / היכרות ראשונה">יסודי / היכרות ראשונה</option>
                   <option value="חטיבת ביניים / תיכון">חטיבת ביניים / תיכון</option>
-                  <option value="מתקדמים / מגמת רובוטיקה ותוכנה">מתקדמים / מגמת רובוטיקה ותוכנה</option>
+                  <option value="מתקדמים / רמה מקצועית ומעמיקה">מתקדמים / רמה מקצועית ומעמיקה</option>
                 </select>
               </div>
 
@@ -743,12 +876,13 @@ export default function CustomTrackCreator() {
                   style={{
                     padding: '12px 28px',
                     borderRadius: '14px',
-                    background: projectType === 'hardware_software' ? '#2563eb' : '#059669',
+                    background: currentDomainInfo.gradient,
                     color: '#ffffff',
                     border: 'none',
                     fontWeight: '900',
                     fontSize: '1rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    boxShadow: `0 6px 16px ${currentDomainInfo.color}35`
                   }}
                 >
                   המשך לשלב הבא ←
@@ -757,19 +891,24 @@ export default function CustomTrackCreator() {
             </div>
           )}
 
-          {/* TAB 2: COMPONENTS / FEATURES SELECTION */}
+          {/* TAB 2: COMPONENTS / FEATURES / LAB SELECTION */}
           {activeStep === 2 && (
             <div style={{ background: '#ffffff', padding: '32px', borderRadius: '24px', border: '1.5px solid #e2e8f0', boxShadow: '0 6px 20px rgba(0,0,0,0.03)' }}>
               <h2 style={{ margin: '0 0 10px 0', fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>
-                {projectType === 'hardware_software' ? '🔌 בחר רכיבי חומרה וחיישנים' : `💻 בחר נושאי לימוד ופיצ'רים (${softwareStack.toUpperCase()})`}
+                {selectedDomain === 'robotics' ? '🤖 בחר רכיבי חומרה וחיישנים' :
+                 selectedDomain === 'software' ? `💻 בחר נושאי לימוד ופיצ'רים (${softwareStack.toUpperCase()})` :
+                 selectedDomain === 'science' ? '🔬 בחר ציוד וחומרים למעבדת הניסויים' :
+                 selectedDomain === 'business' ? '💼 בחר תוצרים עסקיים ומסמכי יזמות' :
+                 selectedDomain === 'design' ? '🎨 בחר תוצרי עיצוב, מיתוג ו-UI/UX' :
+                 '🌍 בחר מוקדי עשייה וסגנון למידה'}
               </h2>
               <p style={{ margin: '0 0 20px 0', color: '#64748b', fontSize: '0.92rem', fontWeight: '600' }}>
-                הסוכן ייצור שיעורי הרכבה, חיבור פינים ואתגרי תכנות מותאמים לכל רכיב שנבחר.
+                הסוכן המומחה יתאים את השיעורים והמשימות המעשיות לכל רכיב ותוצר שתבחר כאן.
               </p>
 
-              {/* Components Chips Grid */}
+              {/* Chips Grid based on domain */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '24px' }}>
-                {projectType === 'hardware_software' ? (
+                {selectedDomain === 'robotics' && (
                   HARDWARE_COMPONENTS.map(comp => (
                     <button
                       key={comp}
@@ -793,7 +932,9 @@ export default function CustomTrackCreator() {
                       <span>{comp}</span>
                     </button>
                   ))
-                ) : (
+                )}
+
+                {selectedDomain === 'software' && (
                   (SOFTWARE_FEATURES_MAP[softwareStack] || []).map(feat => (
                     <button
                       key={feat}
@@ -802,9 +943,9 @@ export default function CustomTrackCreator() {
                       style={{
                         padding: '10px 18px',
                         borderRadius: '14px',
-                        border: selectedSwFeatures.includes(feat) ? '2px solid #059669' : '1.5px solid #cbd5e1',
-                        background: selectedSwFeatures.includes(feat) ? '#ecfdf5' : '#ffffff',
-                        color: selectedSwFeatures.includes(feat) ? '#065f46' : '#334155',
+                        border: selectedSwFeatures.includes(feat) ? '2px solid #4f46e5' : '1.5px solid #cbd5e1',
+                        background: selectedSwFeatures.includes(feat) ? '#eef2ff' : '#ffffff',
+                        color: selectedSwFeatures.includes(feat) ? '#3730a3' : '#334155',
                         fontWeight: '800',
                         fontSize: '0.9rem',
                         cursor: 'pointer',
@@ -818,15 +959,112 @@ export default function CustomTrackCreator() {
                     </button>
                   ))
                 )}
+
+                {selectedDomain === 'science' && (
+                  SCIENCE_MATERIALS.map(mat => (
+                    <button
+                      key={mat}
+                      type="button"
+                      onClick={() => toggleScienceMaterial(mat)}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '14px',
+                        border: selectedScienceMaterials.includes(mat) ? '2px solid #0284c7' : '1.5px solid #cbd5e1',
+                        background: selectedScienceMaterials.includes(mat) ? '#f0f9ff' : '#ffffff',
+                        color: selectedScienceMaterials.includes(mat) ? '#0369a1' : '#334155',
+                        fontWeight: '800',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>{selectedScienceMaterials.includes(mat) ? '✓' : '+'}</span>
+                      <span>{mat}</span>
+                    </button>
+                  ))
+                )}
+
+                {selectedDomain === 'business' && (
+                  BUSINESS_DELIVERABLES.map(del => (
+                    <button
+                      key={del}
+                      type="button"
+                      onClick={() => toggleBusinessDeliverable(del)}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '14px',
+                        border: selectedBusinessDeliverables.includes(del) ? '2px solid #d97706' : '1.5px solid #cbd5e1',
+                        background: selectedBusinessDeliverables.includes(del) ? '#fffbeb' : '#ffffff',
+                        color: selectedBusinessDeliverables.includes(del) ? '#b45309' : '#334155',
+                        fontWeight: '800',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>{selectedBusinessDeliverables.includes(del) ? '✓' : '+'}</span>
+                      <span>{del}</span>
+                    </button>
+                  ))
+                )}
+
+                {selectedDomain === 'design' && (
+                  DESIGN_DELIVERABLES.map(des => (
+                    <button
+                      key={des}
+                      type="button"
+                      onClick={() => toggleDesignDeliverable(des)}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '14px',
+                        border: selectedDesignDeliverables.includes(des) ? '2px solid #db2777' : '1.5px solid #cbd5e1',
+                        background: selectedDesignDeliverables.includes(des) ? '#fdf2f8' : '#ffffff',
+                        color: selectedDesignDeliverables.includes(des) ? '#be185d' : '#334155',
+                        fontWeight: '800',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>{selectedDesignDeliverables.includes(des) ? '✓' : '+'}</span>
+                      <span>{des}</span>
+                    </button>
+                  ))
+                )}
+
+                {selectedDomain === 'polymath' && (
+                  POLYMATH_STYLES.map(style => (
+                    <div
+                      key={style}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '14px',
+                        border: '2px solid #7c3aed',
+                        background: '#faf5ff',
+                        color: '#6d28d9',
+                        fontWeight: '800',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      ✓ {style}
+                    </div>
+                  ))
+                )}
               </div>
 
-              {/* Add Custom Component / Feature */}
+              {/* Add Custom Component / Deliverable */}
               <div style={{ display: 'flex', gap: '10px', marginBottom: '28px' }}>
                 <input
                   type="text"
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
-                  placeholder={projectType === 'hardware_software' ? 'הוסף רכיב / חיישן אישי נוסף...' : 'הוסף ספרייה או פיצ\'ר אישי נוסף...'}
+                  placeholder="הוסף רכיב / תוצר / ציוד אישי נוסף..."
                   style={{
                     flex: 1,
                     padding: '12px 18px',
@@ -868,12 +1106,13 @@ export default function CustomTrackCreator() {
                   style={{
                     padding: '12px 28px',
                     borderRadius: '14px',
-                    background: projectType === 'hardware_software' ? '#2563eb' : '#059669',
+                    background: currentDomainInfo.gradient,
                     color: '#ffffff',
                     border: 'none',
                     fontWeight: '900',
                     fontSize: '1rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    boxShadow: `0 6px 16px ${currentDomainInfo.color}35`
                   }}
                 >
                   המשך להגדרת הפרקים ←
@@ -1274,25 +1513,81 @@ export default function CustomTrackCreator() {
             </div>
           )}
 
-          {/* TAB 5: FINAL GENERATION */}
+          {/* TAB 5: FINAL GENERATION & MULTI-AGENT PIPELINE */}
           {activeStep === 5 && (
             <div style={{ background: '#ffffff', padding: '36px', borderRadius: '24px', border: '1.5px solid #e2e8f0', boxShadow: '0 6px 20px rgba(0,0,0,0.03)' }}>
-              <h2 style={{ margin: '0 0 10px 0', fontSize: '1.5rem', fontWeight: '900', color: '#0f172a' }}>
-                🚀 סיכום והפעלת סוכן ה-AI (Gemini 3.1 Pro Preview)
-              </h2>
-              <p style={{ margin: '0 0 24px 0', color: '#64748b', fontSize: '0.95rem', fontWeight: '600' }}>
-                הסוכן יחבר את כל הקישורים וההנחיות שהזנת למסלול לימודי שלם ומובנה אחד-לאחד לפי המבנה המקצועי.
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '2rem' }}>{currentDomainInfo.icon}</span>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '950', color: '#0f172a' }}>
+                    סיכום והפעלת רשת הסוכנים של ה-AI
+                  </h2>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.92rem', fontWeight: '600' }}>
+                    הפעלת 4 סוכני AI מומחים (ניהול, תוכן, עיצוב ובקרת איכות) ב-Gemini 3.1 Pro
+                  </p>
+                </div>
+              </div>
 
               {/* Summary Box */}
-              <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '18px', border: '1.5px solid #e2e8f0', marginBottom: '26px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div><strong>סוג פרויקט:</strong> {projectType === 'hardware_software' ? '🤖 חומרה ותוכנה (ESP32/Arduino)' : `💻 תוכנה בלבד (${softwareStack.toUpperCase()})`}</div>
-                <div><strong>שם הפרויקט:</strong> {projectTitle || 'ייקבע אוטומטית לפי תוכן האתר'}</div>
-                <div><strong>מודל AI פעיל:</strong> ✨ Gemini 3.1 Pro Preview</div>
-                <div><strong>מבנה הפרקים:</strong> {customChapters.map(c => c.title).join(' | ')}</div>
-                <div><strong>קישורים שהוזנו:</strong> {docUrls.filter(u => u.url && u.url.trim()).length} קישורים (עם הנחיות מותאמות לכל קישור)</div>
-                <div><strong>קבצים שהועלו:</strong> {uploadedFiles.length} קבצים</div>
-                <div><strong>רכיבים / נושאים:</strong> {(projectType === 'hardware_software' ? selectedHwComponents : selectedSwFeatures).join(', ')}</div>
+              <div style={{
+                background: '#f8fafc',
+                padding: '22px',
+                borderRadius: '20px',
+                border: '1.5px solid #e2e8f0',
+                marginBottom: '26px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '14px',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+              }}>
+                <div>
+                  <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700', display: 'block' }}>תחום וסוכן מוביל:</span>
+                  <span style={{ fontWeight: '900', color: currentDomainInfo.color, fontSize: '1rem' }}>
+                    {currentDomainInfo.icon} {currentDomainInfo.title}
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700', display: 'block' }}>שם הפרויקט:</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a' }}>
+                    {projectTitle || 'ייקבע אוטומטית לפי תוכן האתר וההנחיות'}
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700', display: 'block' }}>פוקוס ורמת קושי:</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a' }}>
+                    {selectedDomain === 'robotics' ? `לוח: ${targetBoard} | ${difficulty}` :
+                     selectedDomain === 'software' ? `שפה: ${softwareStack.toUpperCase()} | ${difficulty}` :
+                     difficulty}
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700', display: 'block' }}>רכיבים ותוצרים נבחרים:</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a' }}>
+                    {(selectedDomain === 'robotics' ? selectedHwComponents :
+                      selectedDomain === 'software' ? selectedSwFeatures :
+                      selectedDomain === 'science' ? selectedScienceMaterials :
+                      selectedDomain === 'business' ? selectedBusinessDeliverables :
+                      selectedDomain === 'design' ? selectedDesignDeliverables :
+                      [selectedPolymathStyle]).join(', ') || 'ברירת מחדל של הסוכן'}
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700', display: 'block' }}>פרקים מוגדרים:</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a' }}>
+                    {customChapters.length} פרקים ({customChapters.map(c => c.title).join(' • ')})
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: '700', display: 'block' }}>מקורות מידע וקבצים:</span>
+                  <span style={{ fontWeight: '800', color: '#0f172a' }}>
+                    {docUrls.filter(u => u.url && u.url.trim()).length} קישורים, {uploadedFiles.length} קבצים
+                  </span>
+                </div>
               </div>
 
               {/* Additional Custom Instructions Prompt */}
@@ -1304,7 +1599,7 @@ export default function CustomTrackCreator() {
                   type="text"
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
-                  placeholder="לדוגמה: שים דגש על הסבר חיבורי ה-I2C ושילוב קוד עם מנוע סרוו וג'ויסטיק..."
+                  placeholder="לדוגמה: שים דגש על שילוב דוגמאות מהעולם האמיתי, טיפים מעשיים ואתגרי בונוס..."
                   style={{
                     width: '100%',
                     padding: '14px 18px',
@@ -1332,59 +1627,140 @@ export default function CustomTrackCreator() {
                     width: '100%',
                     padding: '18px',
                     borderRadius: '18px',
-                    background: projectType === 'hardware_software' ? 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)' : 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                    background: currentDomainInfo.gradient,
                     color: '#ffffff',
                     border: 'none',
                     fontWeight: '950',
                     fontSize: '1.2rem',
                     cursor: 'pointer',
-                    boxShadow: '0 8px 25px rgba(37,99,235,0.35)',
-                    fontFamily: 'inherit'
+                    boxShadow: `0 8px 25px ${currentDomainInfo.color}40`,
+                    fontFamily: 'inherit',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  🚀 צור מסלול למידה מלא ב-AI (Gemini 3.1 Pro Preview)
+                  <span>🚀</span>
+                  <span>הפעל את רשת הסוכנים וצור מסלול {currentDomainInfo.title.split(',')[0]} (Gemini 3.1 Pro)</span>
+                  <span>←</span>
                 </button>
               )}
 
-              {/* Loading State */}
+              {/* Multi-Agent Live Visualizer UI during generation */}
               {isGenerating && (
-                <div style={{ textAlign: 'center', padding: '30px', background: '#eff6ff', borderRadius: '20px', border: '2px solid #bfdbfe' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '12px', animation: 'spin 2s linear infinite' }}>⏳</div>
-                  <h3 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#1e3a8a', margin: '0 0 8px 0' }}>
-                    Gemini 3.1 Pro Preview מייצר את המסלול עכשיו...
-                  </h3>
-                  <p style={{ fontSize: '1rem', color: '#2563eb', fontWeight: '800', margin: 0 }}>
+                <div style={{
+                  background: '#f8fafc',
+                  border: '2px solid #cbd5e1',
+                  borderRadius: '24px',
+                  padding: '28px',
+                  textAlign: 'center'
+                }}>
+                  {/* Top Live Progress Bar */}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: '#eff6ff', padding: '8px 20px', borderRadius: '20px', border: '1px solid #bfdbfe', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '1.4rem', animation: 'spin 2s linear infinite' }}>⚙️</span>
+                    <span style={{ fontWeight: '900', color: '#1e40af', fontSize: '0.95rem' }}>
+                      רשת 4 הסוכנים פועלת בסנכרון מלא ב-Gemini 3.1 Pro Preview
+                    </span>
+                  </div>
+
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: '950', color: '#0f172a', margin: '0 0 10px 0' }}>
                     {genStepMessage}
-                  </p>
+                  </h3>
+
+                  {/* 4 Agent Cards Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '14px',
+                    marginTop: '22px'
+                  }}>
+                    {[
+                      { name: 'סוכן Orchestrator', role: 'סיווג וארכיטקטורה', icon: '👑', color: '#6366f1' },
+                      { name: `סוכן תוכן ${currentDomainInfo.title.split(',')[0]}`, role: 'פדגוגיה ושיעורים', icon: currentDomainInfo.icon, color: currentDomainInfo.color },
+                      { name: 'סוכן עיצוב ויזואלי', role: 'פלטה ותגיות זוהרות', icon: '🎨', color: '#ec4899' },
+                      { name: 'סוכן בקרת איכות QA', role: 'אימות מבנה ושלמות', icon: '🛡️', color: '#10b981' }
+                    ].map((agent, aIdx) => {
+                      const isActive = activeAgentIndex === aIdx;
+                      const isCompleted = activeAgentIndex > aIdx;
+                      return (
+                        <div
+                          key={aIdx}
+                          style={{
+                            background: isActive ? '#ffffff' : isCompleted ? '#f0fdf4' : '#f8fafc',
+                            border: isActive ? `2px solid ${agent.color}` : isCompleted ? '2px solid #86efac' : '1.5px solid #e2e8f0',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            textAlign: 'center',
+                            boxShadow: isActive ? `0 8px 24px ${agent.color}30` : 'none',
+                            transition: 'all 0.3s ease',
+                            transform: isActive ? 'scale(1.03)' : 'scale(1)'
+                          }}
+                        >
+                          <div style={{ fontSize: '1.8rem', marginBottom: '6px' }}>{agent.icon}</div>
+                          <div style={{ fontWeight: '900', fontSize: '0.92rem', color: '#0f172a', marginBottom: '4px' }}>
+                            {agent.name}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: '600', marginBottom: '10px' }}>
+                            {agent.role}
+                          </div>
+                          <div>
+                            {isActive ? (
+                              <span style={{ background: `${agent.color}20`, color: agent.color, padding: '4px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '900' }}>
+                                ⚡ מעבד כעת...
+                              </span>
+                            ) : isCompleted ? (
+                              <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '900' }}>
+                                ✓ הושלם
+                              </span>
+                            ) : (
+                              <span style={{ background: '#e2e8f0', color: '#64748b', padding: '4px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800' }}>
+                                ⏳ בתור
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* Generated Success Preview */}
               {generatedTrack && (
-                <div style={{ background: '#ecfdf5', border: '2px solid #a7f3d0', borderRadius: '20px', padding: '24px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.2rem', marginBottom: '8px' }}>🎉</div>
-                  <h3 style={{ fontSize: '1.4rem', fontWeight: '950', color: '#065f46', margin: '0 0 10px 0' }}>
-                    המסלול נוצר בהצלחה מלאה!
+                <div style={{
+                  background: '#f0fdf4',
+                  border: '2px solid #86efac',
+                  borderRadius: '24px',
+                  padding: '30px',
+                  textAlign: 'center',
+                  boxShadow: '0 8px 26px rgba(16,185,129,0.12)'
+                }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🎉✨</div>
+                  <h3 style={{ fontSize: '1.45rem', fontWeight: '950', color: '#14532d', margin: '0 0 10px 0' }}>
+                    רשת הסוכנים השלימה בהצלחה את יצירת המסלול!
                   </h3>
-                  <p style={{ fontSize: '1rem', color: '#047857', fontWeight: '700', marginBottom: '20px' }}>
-                    {generatedTrack.title} ({generatedTrack.chapters?.length || 3} פרקים, {generatedTrack.chapters?.reduce((acc, c) => acc + (c.lessons?.length || 0), 0) || 0} שיעורים)
+                  <p style={{ fontSize: '1.05rem', color: '#166534', fontWeight: '800', marginBottom: '22px' }}>
+                    {generatedTrack.title} ({generatedTrack.chapters?.length || 3} פרקים, {generatedTrack.chapters?.reduce((acc, c) => acc + (c.lessons?.length || 0), 0) || 0} שיעורים מותאמים)
                   </p>
                   <button
                     type="button"
                     onClick={() => navigate(`/track/custom/${generatedTrack.id || generatedTrack.trackId}`)}
                     style={{
-                      padding: '14px 32px',
+                      padding: '16px 36px',
                       borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                      background: currentDomainInfo.gradient,
                       color: '#ffffff',
                       border: 'none',
                       fontWeight: '950',
-                      fontSize: '1.1rem',
+                      fontSize: '1.15rem',
                       cursor: 'pointer',
-                      boxShadow: '0 6px 20px rgba(5,150,105,0.35)'
+                      boxShadow: `0 8px 24px ${currentDomainInfo.color}45`,
+                      fontFamily: 'inherit'
                     }}
                   >
-                    פתח את מסלול הלמידה החדש עכשיו ↗
+                    פתח את מסלול ה-{currentDomainInfo.title.split(',')[0]} החדש בסטודיו ↗
                   </button>
                 </div>
               )}

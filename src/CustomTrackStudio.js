@@ -35,26 +35,40 @@ export default function CustomTrackStudio() {
   const [isSendCodeModalOpen, setIsSendCodeModalOpen] = useState(false);
   const [zoomImageSrc, setZoomImageSrc] = useState(null);
 
-  // 1. Fetch Track Data
+  // 1. Fetch Track Data (with local storage resilience fallback)
   useEffect(() => {
     async function loadTrack() {
       setIsLoading(true);
       setError('');
+      let foundTrack = null;
+
       try {
         const serverUrl = await getActiveServerUrl();
-        const res = await axios.get(`${serverUrl}/api/custom-tracks/${id}`);
+        const res = await axios.get(`${serverUrl}/api/custom-tracks/${id}`, { timeout: 4000 });
         if (res.data && res.data.success && res.data.track) {
-          const t = res.data.track;
-          setTrack(t);
-          setSelectedLessonId('welcome');
-        } else {
-          setError('המסלול לא נמצא במערכת');
+          foundTrack = res.data.track;
         }
       } catch (err) {
-        setError(err.response?.data?.error || 'שגיאה בטעינת המסלול מהשרת');
-      } finally {
-        setIsLoading(false);
+        console.warn('[Studio] Server fetch failed or timed out:', err.message);
       }
+
+      // Check local storage cache if server request didn't return track
+      if (!foundTrack) {
+        try {
+          const localTracks = JSON.parse(localStorage.getItem('smartstart_custom_tracks') || '[]');
+          foundTrack = localTracks.find(t => (t.id === id || t.trackId === id));
+        } catch (e) {
+          console.warn('[Studio] LocalStorage read failed:', e);
+        }
+      }
+
+      if (foundTrack) {
+        setTrack(foundTrack);
+        setSelectedLessonId('welcome');
+      } else {
+        setError('המסלול המבוקש לא נמצא');
+      }
+      setIsLoading(false);
     }
     loadTrack();
   }, [id]);
@@ -365,7 +379,7 @@ export default function CustomTrackStudio() {
                       fontWeight: '900',
                       marginBottom: '20px'
                     }}>
-                      ✨ ברוכים הבאים לעולם הרובוטיקה והפיתוח
+                      {track.icon || '✨'} {track.badge || 'ברוכים הבאים למסלול הלמידה'}
                     </div>
 
                     <h1 style={{
@@ -393,18 +407,18 @@ export default function CustomTrackStudio() {
                       style={{
                         padding: '18px 42px',
                         borderRadius: '16px',
-                        background: 'linear-gradient(135deg, #4F46E5 0%, #7E22CE 100%)',
+                        background: track.gradient || 'linear-gradient(135deg, #4F46E5 0%, #7E22CE 100%)',
                         color: '#ffffff',
                         border: 'none',
                         fontWeight: '900',
                         fontSize: '1.15rem',
                         cursor: 'pointer',
-                        boxShadow: '0 12px 35px rgba(79, 70, 229, 0.45)',
+                        boxShadow: track.glow || '0 12px 35px rgba(79, 70, 229, 0.45)',
                         transition: 'all 0.3s ease',
                         fontFamily: 'inherit'
                       }}
                     >
-                      🚀 היכנס לעולם הרובוטיקה והתחל בהרכבה צעד-אחר-צעד ←
+                      {track.icon || '🚀'} התחל בלמידה מעשית צעד-אחר-צעד ←
                     </button>
                   </div>
 
@@ -437,7 +451,7 @@ export default function CustomTrackStudio() {
                       fontWeight: '800',
                       backdropFilter: 'blur(10px)'
                     }}>
-                      📸 דגם מוגמר סופי - {track.title}
+                      {track.icon || '📸'} תוצר סופי - {track.title}
                     </div>
 
                     {track.coverImage ? (
@@ -447,7 +461,7 @@ export default function CustomTrackStudio() {
                         style={{ maxWidth: '88%', maxHeight: '88%', objectFit: 'contain' }}
                       />
                     ) : (
-                      <div style={{ fontSize: '4rem' }}>🤖</div>
+                      <div style={{ fontSize: '4.5rem' }}>{track.icon || '🚀'}</div>
                     )}
                   </div>
                 </div>
@@ -488,8 +502,193 @@ export default function CustomTrackStudio() {
                 </h2>
               </div>
 
-              {/* CODING MISSION CHALLENGE VIEW (MATCHING IMAGE 2 EXACTLY) */}
-              {(currentLesson.isCodingMission || currentLesson.neededBlocks || currentLesson.goal) ? (
+              {/* 1. SCIENCE EXPERIMENT STEP */}
+              {currentLesson.isExperimentStep ? (
+                <div style={{ background: '#ffffff', padding: '28px 32px', borderRadius: '24px', border: '1.5px solid #cbd5e1', boxShadow: '0 6px 24px rgba(15,23,42,0.04)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🔬</span>
+                    <h4 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0369a1', margin: 0 }}>
+                      מעבדת חקר ותצפית מדעית
+                    </h4>
+                  </div>
+                  <p style={{ color: '#334155', fontSize: '1.05rem', margin: '0 0 24px 0', fontWeight: '600', lineHeight: '1.6' }}>
+                    {currentLesson.goal || 'חקור את התופעה המדעית, בצע את הניסוי המודרך ותעד את המדידות.'}
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+                    {/* Left Column: Hypothesis & Equipment */}
+                    <div style={{ background: '#f0f9ff', padding: '22px', borderRadius: '20px', border: '1.5px solid #bae6fd' }}>
+                      {currentLesson.hypothesis && (
+                        <div style={{ marginBottom: '18px' }}>
+                          <h5 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: '900', color: '#0369a1' }}>
+                            🧪 שאלת המחקר והשערה מדעית:
+                          </h5>
+                          <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '14px', border: '1px solid #7dd3fc', color: '#0c4a6e', fontSize: '0.95rem', fontWeight: '700', lineHeight: '1.6' }}>
+                            {currentLesson.hypothesis}
+                          </div>
+                        </div>
+                      )}
+
+                      <h5 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: '900', color: '#0369a1' }}>
+                        🧰 ציוד וחומרים נדרשים למעבדה:
+                      </h5>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {(currentLesson.materials || ['כלי מדידה', 'מחברת רישום נתונים', 'שעון עצר']).map((mat, idx) => (
+                          <span key={idx} style={{ padding: '8px 16px', borderRadius: '12px', background: '#ffffff', color: '#0369a1', fontWeight: '800', fontSize: '0.88rem', border: '1.5px solid #7dd3fc' }}>
+                            ✓ {mat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Protocol Instructions & Key Takeaways */}
+                    <div style={{ background: '#f8fafc', padding: '22px', borderRadius: '20px', border: '1.5px solid #e2e8f0' }}>
+                      <h5 style={{ margin: '0 0 12px 0', fontSize: '1.05rem', fontWeight: '900', color: '#0f172a' }}>
+                        📋 מהלך הניסוי והמדידה:
+                      </h5>
+                      <ol style={{ paddingRight: '20px', margin: '0 0 20px 0', color: '#334155', fontSize: '0.96rem', lineHeight: '1.9' }}>
+                        {(currentLesson.instructions || ['בצע את שלבי הניסוי ותעד את התוצאות.']).map((inst, idx) => (
+                          <li key={idx} style={{ fontWeight: '600' }}>{inst}</li>
+                        ))}
+                      </ol>
+
+                      {currentLesson.keyTakeaways && (
+                        <div style={{ background: '#e0f2fe', padding: '14px', borderRadius: '14px', border: '1px solid #38bdf8', color: '#0369a1', fontSize: '0.9rem', fontWeight: '800' }}>
+                          💡 תובנה מדעית: {currentLesson.keyTakeaways}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : currentLesson.isBusinessMission ? (
+                /* 2. BUSINESS / ENTREPRENEURSHIP MISSION */
+                <div style={{ background: '#ffffff', padding: '28px 32px', borderRadius: '24px', border: '1.5px solid #cbd5e1', boxShadow: '0 6px 24px rgba(15,23,42,0.04)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>💼</span>
+                    <h4 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#b45309', margin: 0 }}>
+                      משימת יזמות, עסקים וסטארט-אפ
+                    </h4>
+                  </div>
+                  <p style={{ color: '#334155', fontSize: '1.05rem', margin: '0 0 24px 0', fontWeight: '600', lineHeight: '1.6' }}>
+                    {currentLesson.goal || 'הגדר את המודל העסקי, נתח את קהל היעד ובנה הצעת ערך ייחודית.'}
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+                    {/* Left Column: Target Audience & Mentor Tip */}
+                    <div style={{ background: '#fffbeb', padding: '22px', borderRadius: '20px', border: '1.5px solid #fde68a' }}>
+                      {currentLesson.targetAudience && (
+                        <div style={{ marginBottom: '18px' }}>
+                          <h5 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: '900', color: '#b45309' }}>
+                            🎯 קהל יעד וכאב מרכזי:
+                          </h5>
+                          <div style={{ background: '#ffffff', padding: '14px 18px', borderRadius: '14px', border: '1px solid #fcd34d', color: '#78350f', fontSize: '0.95rem', fontWeight: '700', lineHeight: '1.6' }}>
+                            {currentLesson.targetAudience}
+                          </div>
+                        </div>
+                      )}
+
+                      <h5 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: '900', color: '#b45309' }}>
+                        💡 טיפ של יזם מנטור:
+                      </h5>
+                      <div style={{ background: '#ffffff', padding: '16px', borderRadius: '14px', border: '1px solid #fcd34d', color: '#92400e', fontSize: '0.95rem', fontStyle: 'italic', fontWeight: '800', lineHeight: '1.6' }}>
+                        "{currentLesson.mentorTip || 'הקשב ללקוחות שלך יותר מאשר לתוכנית המקורית שלך.'}"
+                      </div>
+                    </div>
+
+                    {/* Right Column: Action Deliverables */}
+                    <div style={{ background: '#f8fafc', padding: '22px', borderRadius: '20px', border: '1.5px solid #e2e8f0' }}>
+                      <h5 style={{ margin: '0 0 12px 0', fontSize: '1.05rem', fontWeight: '900', color: '#0f172a' }}>
+                        🚀 משימת עשייה יזמית:
+                      </h5>
+                      <ol style={{ paddingRight: '20px', margin: 0, color: '#334155', fontSize: '0.96rem', lineHeight: '1.9' }}>
+                        {(currentLesson.instructions || ['בצע את המשימה היזמית שלב-אחר-שלב.']).map((inst, idx) => (
+                          <li key={idx} style={{ fontWeight: '600' }}>{inst}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              ) : currentLesson.isDesignChallenge ? (
+                /* 3. DESIGN CHALLENGE STEP */
+                <div style={{ background: '#ffffff', padding: '28px 32px', borderRadius: '24px', border: '1.5px solid #cbd5e1', boxShadow: '0 6px 24px rgba(15,23,42,0.04)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🎨</span>
+                    <h4 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#be185d', margin: 0 }}>
+                      אתגר עיצוב גרפי, מיתוג ו-UI/UX
+                    </h4>
+                  </div>
+                  <p style={{ color: '#334155', fontSize: '1.05rem', margin: '0 0 24px 0', fontWeight: '600', lineHeight: '1.6' }}>
+                    {currentLesson.goal || 'צור שפה ויזואלית ייחודית, פלטת צבעים, לוגו ונכסי ממשק משתמש.'}
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+                    {/* Left Column: HEX Palette & Designer Tip */}
+                    <div style={{ background: '#fdf2f8', padding: '22px', borderRadius: '20px', border: '1.5px solid #fbcfe8' }}>
+                      <h5 style={{ margin: '0 0 10px 0', fontSize: '1rem', fontWeight: '900', color: '#be185d' }}>
+                        🌈 פלטת צבעים מומלצת (HEX):
+                      </h5>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
+                        {(currentLesson.recommendedHex || ['#0f172a', '#3b82f6', '#db2777', '#f8fafc']).map((hex, idx) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '6px 12px', borderRadius: '12px', border: '1.5px solid #f472b6', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                            <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: hex, border: '1px solid rgba(0,0,0,0.1)' }}></div>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '800', fontSize: '0.85rem', color: '#0f172a' }}>{hex}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <h5 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: '900', color: '#be185d' }}>
+                        ✨ טיפ מנהל קריאייטיב:
+                      </h5>
+                      <div style={{ background: '#ffffff', padding: '16px', borderRadius: '14px', border: '1.5px solid #fbcfe8', color: '#9d174d', fontSize: '0.95rem', fontStyle: 'italic', fontWeight: '800', lineHeight: '1.6' }}>
+                        "{currentLesson.designerTip || 'עיצוב טוב הוא בלתי נראה - הוא פשוט עובד ומרגיש טבעי.'}"
+                      </div>
+                    </div>
+
+                    {/* Right Column: Execution Steps */}
+                    <div style={{ background: '#f8fafc', padding: '22px', borderRadius: '20px', border: '1.5px solid #e2e8f0' }}>
+                      <h5 style={{ margin: '0 0 12px 0', fontSize: '1.05rem', fontWeight: '900', color: '#0f172a' }}>
+                        📐 שלבי הביצוע והעיצוב:
+                      </h5>
+                      <ol style={{ paddingRight: '20px', margin: 0, color: '#334155', fontSize: '0.96rem', lineHeight: '1.9' }}>
+                        {(currentLesson.instructions || ['בצע את שלבי העיצוב בכלי הגרפי הנבחר.']).map((inst, idx) => (
+                          <li key={idx} style={{ fontWeight: '600' }}>{inst}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              ) : currentLesson.isActionMission ? (
+                /* 4. UNIVERSAL / POLYMATH ACTION MISSION */
+                <div style={{ background: '#ffffff', padding: '28px 32px', borderRadius: '24px', border: '1.5px solid #cbd5e1', boxShadow: '0 6px 24px rgba(15,23,42,0.04)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🌟</span>
+                    <h4 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#6d28d9', margin: 0 }}>
+                      משימת פעולה מעשית
+                    </h4>
+                  </div>
+                  <p style={{ color: '#334155', fontSize: '1.05rem', margin: '0 0 24px 0', fontWeight: '600', lineHeight: '1.6' }}>
+                    {currentLesson.goal || 'התנסות מעשית מודרכת לפיתוח מיומנויות ותוצר ממשי.'}
+                  </p>
+
+                  <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '20px', border: '1.5px solid #e2e8f0', marginBottom: '20px' }}>
+                    <h5 style={{ margin: '0 0 12px 0', fontSize: '1.05rem', fontWeight: '900', color: '#0f172a' }}>
+                      📝 הוראות ביצוע שלב-אחר-שלב:
+                    </h5>
+                    <ol style={{ paddingRight: '20px', margin: '0 0 16px 0', color: '#334155', fontSize: '0.96rem', lineHeight: '1.9' }}>
+                      {(currentLesson.instructions || ['בצע את המשימה שלב-אחר-שלב.']).map((inst, idx) => (
+                        <li key={idx} style={{ fontWeight: '600' }}>{inst}</li>
+                      ))}
+                    </ol>
+
+                    {currentLesson.keyTakeaways && (
+                      <div style={{ background: '#f5f3ff', padding: '14px 18px', borderRadius: '14px', border: '1.5px solid #c4b5fd', color: '#5b21b6', fontSize: '0.92rem', fontWeight: '800' }}>
+                        💡 תובנה מרכזית: {currentLesson.keyTakeaways}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : currentLesson.isCodingMission ? (
+                /* 5. CODING MISSION CHALLENGE VIEW (MATCHING IMAGE 2 EXACTLY) */
                 <div style={{ background: '#ffffff', padding: '28px 32px', borderRadius: '24px', border: '1.5px solid #cbd5e1', boxShadow: '0 6px 24px rgba(15,23,42,0.04)', marginBottom: '28px' }}>
                   <h4 style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0f172a', margin: '0 0 10px 0' }}>
                     🎯 משימת התכנות בשיעור זה:
@@ -536,7 +735,7 @@ export default function CustomTrackStudio() {
                     {/* COLUMN 2: C++ TARGET CODE STRUCTURE PREVIEW */}
                     <div style={{ background: '#0f172a', padding: '22px', borderRadius: '20px', direction: 'ltr', textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ color: '#38bdf8', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid #1e293b', paddingBottom: '8px' }}>
-                        💻 קוד C++ המיועד להיווצר בלייב:
+                        💻 קוד המיועד להיווצר בלייב:
                       </div>
                       <pre style={{ margin: 0, color: '#f1f5f9', fontSize: '0.9rem', fontFamily: 'monospace', whiteSpace: 'pre-wrap', flex: 1, lineHeight: '1.6' }}>
                         {currentLesson.codeTemplate || currentLesson.code || `void setup() {\n  bot.begin();\n}\nvoid loop() {\n}`}
@@ -568,7 +767,7 @@ export default function CustomTrackStudio() {
                   </button>
                 </div>
               ) : (
-                /* ASSEMBLY LESSON VIEW (MATCHING IMAGE 1 & IMAGE 3) */
+                /* 6. ASSEMBLY LESSON VIEW (MATCHING IMAGE 1 & IMAGE 3) */
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(420px, 1.2fr) minmax(360px, 1fr)', gap: '28px', marginBottom: '28px' }}>
                   
                   {/* COLUMN 1: CAD IMAGE / DIAGRAM BOX */}
@@ -652,8 +851,8 @@ export default function CustomTrackStudio() {
                 </div>
               )}
 
-              {/* MONACO CODE EDITOR SECTION (ONLY SHOWN FOR PROGRAMMING LESSONS, HIDDEN ON ASSEMBLY CAD STEPS) */}
-              {!currentLesson.isAssemblyStep && (
+              {/* MONACO CODE EDITOR SECTION (ONLY SHOWN FOR PROGRAMMING LESSONS, HIDDEN ON ASSEMBLY CAD STEPS & NON-CODE MISSIONS) */}
+              {(currentLesson.isCodingMission || (currentLesson.code && !currentLesson.isAssemblyStep && !currentLesson.isExperimentStep && !currentLesson.isBusinessMission && !currentLesson.isDesignChallenge && !currentLesson.isActionMission)) && (
                 <div style={{ background: '#ffffff', borderRadius: '24px', border: '1.5px solid #cbd5e1', boxShadow: '0 6px 24px rgba(15,23,42,0.04)', overflow: 'hidden', marginBottom: '28px' }}>
                   <div style={{ padding: '14px 24px', background: '#0f172a', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

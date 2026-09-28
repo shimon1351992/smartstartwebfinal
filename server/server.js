@@ -42,6 +42,8 @@ const {
   isDbConnected
 } = require('./db');
 
+const { orchestrateTrackGeneration, classifyDomain } = require('./aiAgents/orchestrator');
+
 try {
   delete require.cache[require.resolve('./copy_canva')];
   require('./copy_canva');
@@ -1560,239 +1562,19 @@ CRITICAL RULES:
 3. In Coding Challenge lessons, "isCodingMission": true with "goal", "neededBlocks", "codeTemplate" and working C++/Python code.
 4. Provide unique, engaging chapter names matching ${trackTitle}!`;
 
-    let generatedTrack = null;
-
-    // 1. Try OpenRouter API using server key or request key
+    // 1. Determine active API key
     const activeApiKey = (OPENROUTER_API_KEY && OPENROUTER_API_KEY !== 'YOUR_OPENROUTER_API_KEY_HERE')
       ? OPENROUTER_API_KEY
       : (apiKey || process.env.OPENROUTER_API_KEY);
 
-    const TARGET_MODEL = 'google/gemini-3.1-pro-preview';
-
-    if (activeApiKey) {
-      try {
-        console.log(`[OpenRouter AI] Generating track STRICTLY with model: ${TARGET_MODEL}...`);
-        const aiRes = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-          model: TARGET_MODEL,
-          messages: [
-            { 
-              role: 'system', 
-              content: `You are a World-Class STEM & Robotics Curriculum Architect. You MUST output strictly 100% valid JSON matching the schema with NO markdown fences, NO unescaped quotes. Structure Chapter 1 with diverse progressive CAD assembly milestones, Chapter 2 with coding challenge missions with real C++ code, and Chapter 3 with autonomous capstone projects in Hebrew.` 
-            },
-            { role: 'user', content: userPromptContent }
-          ],
-          temperature: 0.7,
-          max_tokens: 24000,
-          response_format: { type: 'json_object' }
-        }, {
-          headers: {
-            'Authorization': `Bearer ${activeApiKey.trim()}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://smartstart.academy',
-            'X-Title': 'SmartStart Web Platform'
-          },
-          timeout: 90000
-        });
-
-        const rawContent = aiRes.data?.choices?.[0]?.message?.content || '';
-        
-        // Robust JSON parsing with auto-repair
-        let clean = rawContent.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
-        clean = clean.replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, '');
-        
-        try {
-          generatedTrack = JSON.parse(clean);
-          console.log(`[OpenRouter AI] Track generated successfully with Gemini 3.1 Pro Preview!`);
-        } catch (parseErr) {
-          console.warn(`[OpenRouter AI] Direct parse failed (${parseErr.message}), attempting JSON structure repair...`);
-          let repaired = clean;
-          const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
-          if (quoteCount % 2 !== 0) repaired += '"';
-          const openBrackets = Math.max(0, (repaired.match(/\[/g) || []).length - (repaired.match(/\]/g) || []).length);
-          const openBraces = Math.max(0, (repaired.match(/\{/g) || []).length - (repaired.match(/\}/g) || []).length);
-          for (let i = 0; i < openBrackets; i++) repaired += ']';
-          for (let i = 0; i < openBraces; i++) repaired += '}';
-          generatedTrack = JSON.parse(repaired);
-          console.log(`[OpenRouter AI] Track JSON repaired and loaded successfully!`);
-        }
-      } catch (openRouterErr) {
-        console.error(`[OpenRouter AI] Gemini 3.1 Pro Call failed:`, openRouterErr.response?.data || openRouterErr.message);
-        console.warn(`[OpenRouter AI] Switching to Smart Heuristic Generator...`);
-      }
-    }
-
-    // 2. Intelligent Smart Fallback Generator (Guarantees rich unique chapters & varied assembly steps)
-    if (!generatedTrack || !generatedTrack.chapters) {
-      console.log(`[AI Generator] Building rich curriculum via Intelligent Smart Builder...`);
-      const comps = components.length > 0 ? components : ['מודול ג\'ויסטיק כפול (JoyStick)', 'מנוע סרוו SG90', 'חיישן מרחק אולטרסוני'];
-      const imgs = availableImages;
-
-      // Realistic progressive assembly step titles and parts lists
-      const assemblyPhases = [
-        { title: 'הכנת משטח הבסיס ולוח השלדה התחתון', parts: ['לוח בסיס אקרילי', '4x רגליות סיליקון למניעת החלקה'], instructions: ['הנח את לוח הבסיס על משטח ישר ונקי.', 'הסר את שכבת המגן של האקריליק.', 'הדבק את רגליות הסיליקון בארבע פינות הבסיס.'] },
-        { title: 'התקנת תושבת מנוע סרוו ציר תחתון (Base Yaw)', parts: ['מנוע סרוו SG90', 'תושבת מתכת תחתונה', '2x ברגי M2*10', '2x אומי M2'], instructions: ['הכנס את מנוע הסרוו לתוך החריץ הייעודי בתושבת הבסיס.', 'השחל את ברגי ה-M2 משני צידי המנוע וחזק עם האומים.', 'וודא כי ציר הסרוו פונה כלפי מעלה בחופשיות.'] },
-        { title: 'חיבור גלגל שיניים ומסבי תנועה סיבובית', parts: ['דיסקת חיבור סרוו', 'בורג M2*4 מרכזי', 'לוח מסתובב מרכזי'], instructions: ['חבר את דיסקת הסרוו אל ציר המנוע המרכזי.', 'הדק את בורג ה-M2 הקטן למניעת חופש תנועה.', 'וודא שהלוח מסתובב בטווח של 0 עד 180 מעלות בצורה חלקה.'] },
-        { title: 'הרכבת מפרק הזרוע הראשי (Shoulder Pitch)', parts: ['זרוע אקרילית תחתונה', 'מנוע סרוו מפרק 2', '2x ברגי M3*12', '2x אומי ניילוק M3'], instructions: ['חבר את זרוע המפרק הראשית אל תושבת הציר הסיבובי.', 'חזק באמצעות ברגי M3 עם אום ניילוק למניעת פתיחה מרעידות.', 'וודא תנועה אנכית רציפה ללא חיכוך.'] },
-        { title: 'חיבור זרוע מפרקית עליונה ומוטות תמיכה', parts: ['זרוע עליונה', 'מוט קישור מתכתי', '2x פיני חיבור', '2x שייבות M3'], instructions: ['השחל את מוט הקישור המקביל בין המפרק התחתון לעליון.', 'נעל באמצעות פיני החיבור והשייבות.', 'וודא שמנגנון הזרוע הכפולה מתיישר בצורה מקבילה.'] },
-        { title: 'התקנת מנוע סרוו מפרק מרפק (Elbow Joint)', parts: ['מנוע סרוו SG90', 'תושבת מפרק מרפק', '2x ברגי M2*8'], instructions: ['התקן את מנוע הסרוו השלישי במפרק המרפק.', 'חזק את ברגי התושבת.', 'כוון את זווית המנוע ל-90 מעלות במצב מנוחה.'] },
-        { title: 'הרכבת מכלול גריפר אחיזה ותושבות אצבעות', parts: ['מכלול גריפר שיניים', 'זוג זרועות לפיתה', '4x ברגי M3*8'], instructions: ['הרכב את גלגלי השיניים המשתלבים של זרועות הלפיתה.', 'הדק את ברגי הציר ללא לחץ מוגזם.', 'בדוק פתיחה וסגירה ידנית של הגריפר.'] },
-        { title: 'חיבור מנוע סרוו לפתיחה וסגירה של הגריפר', parts: ['מנוע סרוו גריפר', 'בורג משיכה M2', 'זרוע מנוף קטנה'], instructions: ['חבר את מנוף הסרוו לגלגל השיניים של הגריפר.', 'הדק את בורג הנעילה.', 'בדוק טווח תנועה: 0 מעלות (פתוח) עד 80 מעלות (אחיזה הדוקה).'] },
-        { title: 'חיווט לוח ההרחבה Sensor Shield ולוח הבקר', parts: ['לוח בקר ESP32 / Arduino', 'לוח הרחבת סנסורים Sensor Shield', '4x עמודי ספייסר M3*15'], instructions: ['הצמד את לוח ההרחבה על גבי לוח הבקר ביישור מדויק של הפינים.', 'חזק את הלוח לבסיס השלדה בעזרת עמודי הספייסר.', 'וודא שמתג המתח בלוח ההרחבה כבוי (OFF).'] },
-        { title: 'חיבור מודול ג\'ויסטיק כפול לכניסות אנלוגיות', parts: ['מודול ג\'ויסטיק כפול (JoyStick)', '5x כבלי נקבה-נקבה', '2x ברגי M3*6'], instructions: ['חבר את פין VRX של הג\'ויסטיק לפין אנלוגי A0 בלוח.', 'חבר את פין VRY של הג\'ויסטיק לפין אנלוגי A1.', 'חבר את פיני ה-VCC (5V) ו-GND לפסי המתח המתאימים.'] },
-        { title: 'ארגון כבלים ובדיקת תנועה מכאנית סופית', parts: ['צינור שרוול כבלים', '3x אזיקוני פלסטיק'], instructions: ['אסוף את כבלי הסרוואים לתוך שרוול הכבלים.', 'חזק בעזרת אזיקונים למניעת משיכת חוטים בזמן תנועה.', 'בדוק שכל המפרקים נעים בחופשיות ללא מתיחת כבלים.'] }
-      ];
-
-      // Build Chapter 1 Assembly Lessons with unique details for every single image
-      const assemblyLessons = (imgs.length > 0 ? imgs : [null, null, null, null]).map((img, idx) => {
-        const phase = assemblyPhases[idx % assemblyPhases.length];
-        return {
-          id: `1.${idx + 1}`,
-          title: `שלב ${idx + 1}: ${phase.title}`,
-          isAssemblyStep: true,
-          partsNeeded: phase.parts,
-          instructions: phase.instructions,
-          imageUrl: img || '',
-          code: ''
-        };
-      });
-
-      // Build Chapter 2 Coding Lessons tailored to project components
-      const codingLessons = [
-        {
-          id: '2.1',
-          title: 'שיעור 2.1: קריאת נתוני ג\'ויסטיק אנלוגיים (ציר X וציר Y)',
-          isCodingMission: true,
-          goal: 'קרא ערכי מתח אנלוגיים (0-1023 / 0-4095) מפיני הג\'ויסטיק והצג אותם במוניטור הטורי בזמן אמת.',
-          neededBlocks: ['תוכנית ראשית', 'חזור לתמיד', 'קרא כניסה אנלוגית (A0)', 'קרא כניסה אנלוגית (A1)', 'הדפס למוניטור הטורי'],
-          codeTemplate: `// קריאת נתוני ג'ויסטיק אנלוגיים:\nconst int joyXPin = 34; // או A0 בארדואינו\nconst int joyYPin = 35; // או A1\n\nvoid setup() {\n  Serial.begin(115200);\n}\n\nvoid loop() {\n  int xVal = analogRead(joyXPin);\n  int yVal = analogRead(joyYPin);\n  Serial.print("Joy X: "); Serial.print(xVal);\n  Serial.print(" | Joy Y: "); Serial.println(yVal);\n  delay(100);\n}`,
-          code: `void setup() {\n  Serial.begin(115200);\n}\nvoid loop() {\n}`
-        },
-        {
-          id: '2.2',
-          title: 'שיעור 2.2: המרת טווח ג\'ויסטיק לזווית סרוו בעזרת פונקציית map()',
-          isCodingMission: true,
-          goal: 'המר את ערכי הג\'ויסטיק לזווית מדויקת מ-0 עד 180 מעלות ושלח אותה למנוע הסרוו של הבסיס.',
-          neededBlocks: ['תוכנית ראשית', 'המרת טווח (map)', 'הגדר זווית סרוו (Servo.write)', 'המתן (15 ms)'],
-          codeTemplate: `#include <ESP32Servo.h>\n\nServo baseServo;\nconst int joyXPin = 34;\n\nvoid setup() {\n  baseServo.attach(18);\n}\n\nvoid loop() {\n  int xVal = analogRead(joyXPin);\n  int angle = map(xVal, 0, 4095, 0, 180);\n  baseServo.write(angle);\n  delay(15);\n}`,
-          code: `void setup() {\n  Serial.begin(115200);\n}\nvoid loop() {\n}`
-        },
-        {
-          id: '2.3',
-          title: 'שיעור 2.3: בקרת תנועה רציפה ואיטית (Smooth Motion Filter)',
-          isCodingMission: true,
-          goal: 'מנע תנועות חדות של הזרוע על ידי אלגוריתם תנועה איטית והדרגתית בעקבות תזוזת הסטיק.',
-          neededBlocks: ['תוכנית ראשית', 'חישוב ממוצע נע', 'צעד תנועה הדרגתי', 'הגדר מהירות סרוו'],
-          codeTemplate: `#include <ESP32Servo.h>\n\nServo armServo;\nint currentAngle = 90;\n\nvoid setup() {\n  armServo.attach(19);\n  armServo.write(currentAngle);\n}\n\nvoid loop() {\n  int yVal = analogRead(35);\n  if (yVal > 2500 && currentAngle < 170) currentAngle += 2;\n  if (yVal < 1500 && currentAngle > 10) currentAngle -= 2;\n  armServo.write(currentAngle);\n  delay(20);\n}`,
-          code: `void setup() {\n  Serial.begin(115200);\n}\nvoid loop() {\n}`
-        },
-        {
-          id: '2.4',
-          title: 'שיעור 2.4: פתיחה וסגירה של הגריפר בלחיצת כפתור הג\'ויסטיק',
-          isCodingMission: true,
-          goal: 'תכנת שינוי מצב גריפר (פתוח/סגור) בכל לחיצה על כפתור הג\'ויסטיק הפנימי (SW Button).',
-          neededBlocks: ['תוכנית ראשית', 'אם נלחץ כפתור (DigitalRead)', 'החלף מצב גריפר', 'בצע השהיית Debounce'],
-          codeTemplate: `#include <ESP32Servo.h>\n\nServo gripperServo;\nconst int buttonPin = 23;\nbool isOpen = true;\n\nvoid setup() {\n  pinMode(buttonPin, INPUT_PULLUP);\n  gripperServo.attach(5);\n  gripperServo.write(10); // פתוח\n}\n\nvoid loop() {\n  if (digitalRead(buttonPin) == LOW) {\n    isOpen = !isOpen;\n    gripperServo.write(isOpen ? 10 : 75);\n    delay(300);\n  }\n}`,
-          code: `void setup() {\n  Serial.begin(115200);\n}\nvoid loop() {\n}`
-        }
-      ];
-
-      // Build Chapter 3 Autonomous & Capstone Lessons
-      const projectLessons = [
-        {
-          id: '3.1',
-          title: 'שיעור 3.1: שגרת אוטומציה - אחיזה, העברה והנחת חפץ (Pick & Place)',
-          isCodingMission: true,
-          goal: 'תכנת רצף פעולות אוטונומי שלם: ירידה לחפץ -> סגירת גריפר -> הרמה -> סיבוב 90 מעלות -> הנחה וחזרה לבסיס!',
-          neededBlocks: ['תוכנית ראשית', 'הפעל שגרת Pick & Place', 'שמור זוויות מפרקים', 'חזור למצב מנוחה'],
-          codeTemplate: `// שגרת Pick and Place אוטונומית:\nvoid performPickAndPlace() {\n  // 1. פתיחת גריפר\n  gripper.write(10); delay(500);\n  // 2. ירידה לחפץ\n  shoulder.write(45); elbow.write(120); delay(800);\n  // 3. סגירת גריפר\n  gripper.write(75); delay(600);\n  // 4. הרמה\n  shoulder.write(90); elbow.write(90); delay(700);\n  // 5. סיבוב ימינה\n  base.write(150); delay(800);\n  // 6. הנחה\n  gripper.write(10); delay(500);\n  // 7. חזרה למרכז\n  base.write(90);\n}\n\nvoid setup() {}\nvoid loop() {\n  performPickAndPlace();\n  while(1); // עצירה בסיום\n}`,
-          code: `void setup() {\n  Serial.begin(115200);\n}\nvoid loop() {\n}`
-        }
-      ];
-
-      // Use customChapters titles if provided by user
-      const ch1Title = customChapters[0]?.title || `פרק 1: הרכבה מכאנית וזיווד מפורט של ${trackTitle} (שלבי CAD)`;
-      const ch2Title = customChapters[1]?.title || `פרק 2: תכנות מונחה עצמים, כיול מנועים ובקרת ג'ויסטיק`;
-      const ch3Title = customChapters[2]?.title || `פרק 3: פרויקטים אוטונומיים ושגרות הפעלה מתקדמות`;
-
-      generatedTrack = {
-        id: trackId,
-        trackId: trackId,
-        title: trackTitle,
-        description: `מסלול למידה והרכבה מתקדם לפיתוח ${trackTitle} על גבי לוח ${targetBoard.toUpperCase()}, כולל שילוב רכיבי ${comps.slice(0, 3).join(', ')}, שלבי CAD מפורטים ותכנות מונחה עצמים.`,
-        targetBoard: targetBoard,
-        badges: [targetBoard.toUpperCase(), 'הרכבה מכאנית', 'תכנות C++', 'בקרת מנועים'],
-        gradient: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-        glow: '0 0 30px rgba(37,99,235,0.3)',
-        welcomePage: {
-          welcomeText: `ברוכים הבאים למסלול הלמידה והפיתוח של ${trackTitle}! במסלול זה תרכיבו את חלקי הרובוט שלב-אחר-שלב, תלמדו לתכנת מנועי סרוו, חיישנים וג'ויסטיק, ותבנו פרויקטים אוטונומיים מלאים.`,
-          features: [
-            { title: 'שלבי הרכבה מכאנית ושרטוטי CAD', desc: 'הוראות הרכבה מפורטות ומגוונות לכל שלב עם רשימות ברגים ורכיבים מדויקות.' },
-            { title: 'אתגרי תכנות וכיול מנועים', desc: 'משימות קידוד אינטראקטיביות, קריאת ג\'ויסטיק, פונקציות map ובקרת תנועה.' },
-            { title: 'פרויקט אוטונומי מלא', desc: 'תכנות שגרת אחיזה והעברה (Pick & Place) ואפליקציית הפעלה חכמה.' }
-          ]
-        },
-        chapters: [
-          {
-            id: 'ch1',
-            title: ch1Title,
-            lessons: assemblyLessons
-          },
-          {
-            id: 'ch2',
-            title: ch2Title,
-            lessons: codingLessons
-          },
-          {
-            id: 'ch3',
-            title: ch3Title,
-            lessons: projectLessons
-          }
-        ]
-      };
-    }
-
-    // 3. Post-Processing & Image Assignment Enrichment
-    if (generatedTrack && generatedTrack.chapters) {
-      const allAvailImages = [
-        ...(uploadedMedia || []).map(m => m.url),
-        ...(scrapedData?.images || [])
-      ];
-
-      // Set coverImage if missing
-      if (!generatedTrack.coverImage && allAvailImages.length > 0) {
-        generatedTrack.coverImage = allAvailImages[0];
-      }
-
-      let imgIndex = 0;
-      generatedTrack.chapters.forEach(ch => {
-        (ch.lessons || []).forEach(les => {
-          // If lesson has no image or generic placeholder, assign next available scraped/uploaded image
-          if ((!les.imageUrl || les.imageUrl === 'image_url_here' || les.imageUrl.includes('Optional') || les.imageUrl.includes('placeholder')) && allAvailImages.length > 0) {
-            les.imageUrl = allAvailImages[imgIndex % allAvailImages.length];
-            imgIndex++;
-          }
-
-          // Ensure instructions array is populated
-          if (!les.instructions || !Array.isArray(les.instructions) || les.instructions.length === 0) {
-            les.instructions = [
-              'זהה את הרכיבים הנדרשים לשלב זה והנח אותם על משטח העבודה.',
-              'בצע את החיבורים בהתאם לשרטוט ולמיקומי הפינים המפורטים.',
-              'וודא כי כל החיבורים יציבים וללא קצרים חשמליים.'
-            ];
-          }
-
-          // Ensure partsNeeded array is populated
-          if (!les.partsNeeded || !Array.isArray(les.partsNeeded) || les.partsNeeded.length === 0) {
-            les.partsNeeded = ['רכיב מרכזי', 'חוטי גישור', 'ברגי חיזוק'];
-          }
-
-          // Ensure code is populated
-          if (!les.code) {
-            les.code = `// קוד עבור שיעור ${les.id}\nvoid setup() {\n  Serial.begin(115200);\n}\n\nvoid loop() {\n  delay(1000);\n}`;
-          }
-        });
-      });
-    }
+    // 2. Invoke AI Multi-Agent Orchestrator (Domain Experts + Styling + QA Validation)
+    const generatedTrack = await orchestrateTrackGeneration({
+      ...req.body,
+      title: trackTitle,
+      activeScrapedData,
+      availableImages,
+      apiKey: activeApiKey
+    });
 
     // Save to Database automatically
     await saveCustomTrack(generatedTrack);
