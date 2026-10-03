@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { getActiveServerUrl } from './serverPort';
 import ConfirmModal from './ConfirmModal';
 import './TeacherDashboard.css';
@@ -57,25 +57,17 @@ const CORE_TRACKS = [
 ];
 
 function TeacherDashboard() {
-  const [currentTeacher, setCurrentTeacher] = useState(null);
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [currentTeacher, setCurrentTeacher] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('smartstart_teacher_user') || localStorage.getItem('smartstart_teacher_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   
   // Dashboard view tab: 'classes' | 'submissions'
   const [activeDashboardTab, setActiveDashboardTab] = useState('classes');
-
-  // Login form
-  const [loginUsername, setLoginUsername] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-
-  // Register form
-  const [regFullName, setRegFullName] = useState('');
-  const [regUsername, setRegUsername] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-
-  const [authError, setAuthError] = useState('');
-  const [authSuccess, setAuthSuccess] = useState('');
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
 
   // Submissions data
   const [submissions, setSubmissions] = useState([]);
@@ -152,7 +144,7 @@ function TeacherDashboard() {
       const serverUrl = await getActiveServerUrl();
       const teacherName = activeTeacher ? (activeTeacher.fullName || activeTeacher.username || '') : '';
       const teacherUsername = activeTeacher ? (activeTeacher.username || '') : '';
-      const isMasterAdmin = activeTeacher && (activeTeacher.username === 'shimon1351992' || activeTeacher.role === 'superadmin');
+      const isMasterAdmin = activeTeacher && (activeTeacher.username === 'shimon1351992' || activeTeacher.role === 'superadmin' || activeTeacher.role === 'admin');
       
       const queryParam = isMasterAdmin ? '' : `?teacherName=${encodeURIComponent(teacherName)}&teacherUsername=${encodeURIComponent(teacherUsername)}`;
       const res = await fetch(`${serverUrl}/api/classes${queryParam}`);
@@ -170,10 +162,18 @@ function TeacherDashboard() {
                  (targetUser && (cUser === targetUser || cTeacher === targetUser || cTeacher.includes(targetUser)));
         });
         setClassesList(filtered);
+        return;
       }
     } catch (err) {
       console.warn('Backend classes fetch failed, using fallback:', err);
     }
+    // Offline/serverless fallback from localStorage
+    try {
+      const localSaved = localStorage.getItem('smartstart_local_classes');
+      if (localSaved) {
+        setClassesList(JSON.parse(localSaved));
+      }
+    } catch (e) {}
   };
 
   // Create new class with direct targetTrack and classCode
@@ -220,7 +220,7 @@ function TeacherDashboard() {
         setClassModalMsg({ type: 'error', text: `❌ ${data.error || 'שגיאה ביצירת כיתה'}` });
       }
     } catch (err) {
-      // Local fallback
+      // Local fallback for offline/serverless
       const generated = newClassCode.trim().toUpperCase() || `CLS-${Math.floor(1000 + Math.random() * 9000)}`;
       const newCls = { 
         id: Date.now(), 
@@ -230,7 +230,13 @@ function TeacherDashboard() {
         assignedTracks: [newClassTargetTrack],
         createdTeacher: currentTeacher ? currentTeacher.fullName : 'מורה'
       };
-      setClassesList(prev => [newCls, ...prev]);
+      setClassesList(prev => {
+        const updated = [newCls, ...prev];
+        try {
+          localStorage.setItem('smartstart_local_classes', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
       setClassModalMsg({ type: 'success', text: `🎉 הכיתה נפתחה! קוד גישה לתלמידים: ${generated}` });
       setNewClassName('');
       setNewClassCode('');
@@ -280,107 +286,16 @@ function TeacherDashboard() {
           await fetch(`${serverUrl}/api/classes/${id}`, { method: 'DELETE' });
         } catch (err) {}
 
-        setClassesList(prev => prev.filter(c => c.id != id));
+        setClassesList(prev => {
+          const updated = prev.filter(c => c.id != id);
+          try {
+            localStorage.setItem('smartstart_local_classes', JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
+        });
         if (selectedClass === className) setSelectedClass('');
       }
     });
-  };
-
-  // Login handler (Username + Password)
-  const handleLogin = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    setIsAuthLoading(true);
-    setAuthError('');
-    setAuthSuccess('');
-
-    try {
-      const serverUrl = await getActiveServerUrl();
-      const res = await fetch(`${serverUrl}/api/teachers/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: loginUsername.trim(),
-          password: loginPassword
-        })
-      });
-
-      const data = await res.json();
-      if (data.success && data.teacher) {
-        sessionStorage.setItem('smartstart_teacher_user', JSON.stringify(data.teacher));
-        localStorage.setItem('smartstart_teacher_user', JSON.stringify(data.teacher));
-        setCurrentTeacher(data.teacher);
-      } else {
-        setAuthError(data.error || 'שם משתמש או סיסמה שגויים');
-      }
-    } catch (err) {
-      // Local fallback login for default demo teacher & master admin
-      const cleanU = loginUsername.trim().toLowerCase();
-      if (
-        (cleanU === 'shimon' || cleanU === 'המורה שמעון') && (loginPassword === '123' || loginPassword === '123456' || loginPassword === 'teacher2026') ||
-        (cleanU === 'shimon1351992' && (loginPassword === '1234' || loginPassword === '123' || loginPassword === '123456' || loginPassword === 'teacher2026'))
-      ) {
-        const teacher = { 
-          id: cleanU === 'shimon1351992' ? 1787057239713 : 1, 
-          fullName: cleanU === 'shimon1351992' ? 'שמעון יעיש (מנהל מערכת)' : 'המורה שמעון', 
-          username: cleanU,
-          role: 'admin'
-        };
-        sessionStorage.setItem('smartstart_teacher_user', JSON.stringify(teacher));
-        localStorage.setItem('smartstart_teacher_user', JSON.stringify(teacher));
-        setCurrentTeacher(teacher);
-      } else {
-        setAuthError('שם משתמש או סיסמה שגויים. אנא נסה שוב.');
-      }
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
-
-  // Register handler
-  const handleRegister = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    setIsAuthLoading(true);
-    setAuthError('');
-    setAuthSuccess('');
-
-    if (!regFullName.trim() || !regUsername.trim() || !regPassword) {
-      setAuthError('אנא מלא את כל שדות החובה');
-      setIsAuthLoading(false);
-      return;
-    }
-
-    try {
-      const serverUrl = await getActiveServerUrl();
-      const res = await fetch(`${serverUrl}/api/teachers/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: regFullName.trim(),
-          username: regUsername.trim(),
-          password: regPassword,
-          email: regEmail.trim()
-        })
-      });
-
-      const data = await res.json();
-      if (data.success && data.teacher) {
-        sessionStorage.setItem('smartstart_teacher_user', JSON.stringify(data.teacher));
-        setCurrentTeacher(data.teacher);
-      } else {
-        setAuthError(data.error || 'שגיאה ברישום מורה חדש');
-      }
-    } catch (err) {
-      // Local registration fallback
-      const teacher = {
-        id: Date.now(),
-        fullName: regFullName.trim(),
-        username: regUsername.trim().toLowerCase()
-      };
-      sessionStorage.setItem('smartstart_teacher_user', JSON.stringify(teacher));
-      setCurrentTeacher(teacher);
-    } finally {
-      setIsAuthLoading(false);
-    }
   };
 
   // Logout handler
@@ -388,8 +303,6 @@ function TeacherDashboard() {
     sessionStorage.removeItem('smartstart_teacher_user');
     localStorage.removeItem('smartstart_teacher_user');
     setCurrentTeacher(null);
-    setLoginUsername('');
-    setLoginPassword('');
   };
 
   // Fetch only this teacher's submissions
@@ -569,6 +482,10 @@ function TeacherDashboard() {
     }
   };
 
+  if (!currentTeacher) {
+    return <Navigate to="/login?tab=login" replace />;
+  }
+
   return (
     <div className="teacher-container">
       {/* Header (Light Theme) */}
@@ -636,188 +553,9 @@ function TeacherDashboard() {
 
       {/* Main Content */}
       <main className="teacher-content">
-        {!currentTeacher ? (
-          /* Login / Register Card */
-          <div className="teacher-login-wrap">
-            <div className="teacher-login-card">
-              <div className="teacher-login-icon">👨‍🏫</div>
-              <h2 style={{ margin: '0 0 6px 0', fontSize: '1.4rem', color: '#0f172a' }}>
-                {authMode === 'login' ? 'כניסת מורה' : 'הרשמת מורה חדש'}
-              </h2>
-              <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '20px' }}>
-                {authMode === 'login' 
-                  ? 'הזן שם משתמש וסיסמה כדי להיכנס לאזור האישי שלך.' 
-                  : 'מלא את הפרטים הבאים כדי להירשם כמורה במערכת.'}
-              </p>
-
-              {/* Toggle Mode Buttons */}
-              <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '12px', padding: '4px', marginBottom: '20px' }}>
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: authMode === 'login' ? '#ffffff' : 'transparent',
-                    color: authMode === 'login' ? '#0f172a' : '#64748b',
-                    fontWeight: '800',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    boxShadow: authMode === 'login' ? '0 2px 6px rgba(0,0,0,0.08)' : 'none'
-                  }}
-                >
-                  התחברות
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('register'); setAuthError(''); }}
-                  style={{
-                    flex: 1,
-                    padding: '8px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: authMode === 'register' ? '#ffffff' : 'transparent',
-                    color: authMode === 'register' ? '#0f172a' : '#64748b',
-                    fontWeight: '800',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    boxShadow: authMode === 'register' ? '0 2px 6px rgba(0,0,0,0.08)' : 'none'
-                  }}
-                >
-                  הרשמת מורה חדש
-                </button>
-              </div>
-
-              {authMode === 'login' ? (
-                /* Login Form */
-                <form onSubmit={handleLogin}>
-                  <div style={{ marginBottom: '14px', textAlign: 'right' }}>
-                    <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
-                      👤 שם משתמש:
-                    </label>
-                    <input
-                      type="text"
-                      value={loginUsername}
-                      onChange={(e) => setLoginUsername(e.target.value)}
-                      placeholder="למשל: shimon"
-                      autoFocus
-                      required
-                      className="teacher-login-input"
-                      style={{ textAlign: 'right' }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '18px', textAlign: 'right' }}>
-                    <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
-                      🔒 סיסמה:
-                    </label>
-                    <input
-                      type="password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder="הזן סיסמה..."
-                      required
-                      className="teacher-login-input"
-                      style={{ textAlign: 'right' }}
-                    />
-                  </div>
-
-                  {authError && (
-                    <div style={{ color: '#dc2626', fontSize: '0.86rem', marginBottom: '14px', fontWeight: 'bold' }}>
-                      {authError}
-                    </div>
-                  )}
-
-                  <button type="submit" disabled={isAuthLoading} className="teacher-login-btn">
-                    {isAuthLoading ? 'מתחבר...' : '🔓 כניסה לאזור האישי'}
-                  </button>
-
-                  <div style={{ marginTop: '14px', fontSize: '0.82rem', color: '#64748b' }}>
-                    מורה רשום לבדיקה: שם משתמש <b>shimon</b> | סיסמה <b>123</b>
-                  </div>
-                </form>
-              ) : (
-                /* Register Form */
-                <form onSubmit={handleRegister}>
-                  <div style={{ marginBottom: '12px', textAlign: 'right' }}>
-                    <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
-                      🏷️ שם המורה המלא (שיוצג לתלמידים): <span style={{ color: '#ef4444' }}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={regFullName}
-                      onChange={(e) => setRegFullName(e.target.value)}
-                      placeholder="למשל: המורה שמעון כהן"
-                      required
-                      className="teacher-login-input"
-                      style={{ textAlign: 'right' }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '12px', textAlign: 'right' }}>
-                    <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
-                      👤 שם משתמש (באנגלית): <span style={{ color: '#ef4444' }}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={regUsername}
-                      onChange={(e) => setRegUsername(e.target.value)}
-                      placeholder="למשל: shimon"
-                      required
-                      className="teacher-login-input"
-                      style={{ textAlign: 'right', direction: 'ltr' }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '12px', textAlign: 'right' }}>
-                    <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
-                      🔒 סיסמה: <span style={{ color: '#ef4444' }}>*</span>
-                    </label>
-                    <input
-                      type="password"
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      placeholder="בחר סיסמה..."
-                      required
-                      className="teacher-login-input"
-                      style={{ textAlign: 'right' }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '16px', textAlign: 'right' }}>
-                    <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
-                      📧 אימייל (אופציונלי):
-                    </label>
-                    <input
-                      type="email"
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="teacher@school.com"
-                      className="teacher-login-input"
-                      style={{ textAlign: 'right', direction: 'ltr' }}
-                    />
-                  </div>
-
-                  {authError && (
-                    <div style={{ color: '#dc2626', fontSize: '0.86rem', marginBottom: '14px', fontWeight: 'bold' }}>
-                      {authError}
-                    </div>
-                  )}
-
-                  <button type="submit" disabled={isAuthLoading} className="teacher-login-btn">
-                    {isAuthLoading ? 'יוצר חשבון...' : '✨ הירשם וכנס לאזור האישי'}
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        ) : (
-          /* Personal Teacher Dashboard with Tabs */
-          <div>
-            {/* Top Dashboard Tabs Navigation */}
-            <div className="teacher-tabs-container">
+        <div>
+          {/* Top Dashboard Tabs Navigation */}
+          <div className="teacher-tabs-container">
               <button
                 type="button"
                 onClick={() => setActiveDashboardTab('classes')}
@@ -1270,7 +1008,6 @@ function TeacherDashboard() {
           </div>
             )}
           </div>
-        )}
       </main>
 
       {/* Code Viewer Modal - Light */}

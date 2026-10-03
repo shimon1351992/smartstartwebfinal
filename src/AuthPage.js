@@ -10,8 +10,9 @@ function AuthPage() {
   const searchParams = new URLSearchParams(location.search);
   const requestedTab = searchParams.get('tab') || searchParams.get('mode');
 
-  // 'student' | 'login' | 'pricing' | 'register'
+  // 'student' | 'login' | 'pricing' | 'free' | 'register'
   const [authMode, setAuthMode] = useState(() => {
+    if (requestedTab === 'free' || requestedTab === 'guest') return 'free';
     if (requestedTab === 'student') return 'student';
     if (requestedTab === 'login' || requestedTab === 'teacher') return 'login';
     if (requestedTab === 'register' || requestedTab === 'pricing') return 'pricing';
@@ -20,7 +21,8 @@ function AuthPage() {
   });
 
   useEffect(() => {
-    if (requestedTab === 'student') setAuthMode('student');
+    if (requestedTab === 'free' || requestedTab === 'guest') setAuthMode('free');
+    else if (requestedTab === 'student') setAuthMode('student');
     else if (requestedTab === 'login' || requestedTab === 'teacher') setAuthMode('login');
     else if (requestedTab === 'register' || requestedTab === 'pricing') setAuthMode('pricing');
     else if (location.pathname === '/register') setAuthMode('pricing');
@@ -41,6 +43,7 @@ function AuthPage() {
   const [regPassword, setRegPassword] = useState('');
   const [regEmail, setRegEmail] = useState('');
 
+  const [guestName, setGuestName] = useState('');
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
@@ -132,11 +135,44 @@ function AuthPage() {
         setAuthError(data.error || 'קוד כיתה שגוי או שאינו קיים במערכת');
       }
     } catch (err) {
+      let matchedTrack = 'car';
+      let matchedClassName = 'כיתת רובוטיקה';
+      try {
+        const localSaved = localStorage.getItem('smartstart_local_classes');
+        if (localSaved) {
+          const parsed = JSON.parse(localSaved);
+          const found = parsed.find(c => (c.classCode || '').toUpperCase() === cleanCode);
+          if (found) {
+            matchedTrack = found.targetTrack || (found.assignedTracks && found.assignedTracks[0]) || 'car';
+            matchedClassName = found.className || 'כיתה';
+          }
+        }
+      } catch (e) {}
+
+      let directPath = '/tracks';
+      let trackHebrewName = 'המסלול המשויך';
+      if (matchedTrack === 'car') {
+        directPath = '/FreenoveCar';
+        trackHebrewName = 'רובוט מכונית 4WD Pro';
+      } else if (matchedTrack === 'turtle') {
+        directPath = '/RobotSmall';
+        trackHebrewName = 'רובוט צב חכם';
+      } else if (matchedTrack === 'house') {
+        directPath = '/smarthouse';
+        trackHebrewName = 'בית חכם IoT';
+      } else if (matchedTrack === 'genai') {
+        directPath = '/genai';
+        trackHebrewName = 'GenAI ואפליקציות Web';
+      } else if (String(matchedTrack).startsWith('custom_')) {
+        directPath = `/track/custom/${matchedTrack}`;
+        trackHebrewName = 'מסלול מותאם אישית';
+      }
+
       const activeLicenses = [
         {
           code: cleanCode,
-          targetTrack: 'car',
-          ownerName: 'כיתת רובוטיקה',
+          targetTrack: matchedTrack,
+          ownerName: matchedClassName,
           unlockedAt: new Date().toISOString()
         }
       ];
@@ -144,13 +180,13 @@ function AuthPage() {
       localStorage.setItem('smartstart_student_session', JSON.stringify({
         studentName: cleanName,
         classCode: cleanCode,
-        className: 'כיתת רובוטיקה',
+        className: matchedClassName,
         teacherName: 'המורה',
-        assignedTracks: ['car'],
-        targetTrack: 'car'
+        assignedTracks: [matchedTrack],
+        targetTrack: matchedTrack
       }));
-      setAuthSuccess(`ברוך הבא ${cleanName}! מועבר ישירות למסלול רובוט מכונית 4WD...`);
-      setTimeout(() => navigate('/FreenoveCar'), 500);
+      setAuthSuccess(`ברוך הבא ${cleanName}! מועבר ישירות למסלול ${trackHebrewName}...`);
+      setTimeout(() => navigate(directPath), 500);
     } finally {
       setIsAuthLoading(false);
     }
@@ -288,6 +324,51 @@ function AuthPage() {
     }
   };
 
+  // =========================================================================
+  // 4. 🚀 Master Full Free Access (כניסה חופשית לכל המערכת ללא הגבלות)
+  // =========================================================================
+  const handleMasterFreeEntry = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    localStorage.removeItem('smartstart_student_session');
+
+    const cleanName = guestName.trim() || 'מורה ומשתמש (גישה חופשית)';
+    const cleanUsername = guestName.trim() ? guestName.trim().toLowerCase().replace(/\s+/g, '_') : 'guest_teacher';
+
+    const masterUser = {
+      id: 'master_guest_' + Date.now(),
+      fullName: cleanName,
+      username: cleanUsername,
+      role: 'admin',
+      plan: 'premium',
+      tier: 3,
+      isGuest: true
+    };
+
+    sessionStorage.setItem('smartstart_teacher_user', JSON.stringify(masterUser));
+    localStorage.setItem('smartstart_teacher_user', JSON.stringify(masterUser));
+
+    const activeLicenses = [
+      {
+        code: 'ALL-ACCESS-FREE',
+        targetTrack: 'all',
+        ownerName: cleanName,
+        unlockedAt: new Date().toISOString()
+      },
+      { code: 'CAR-FREE', targetTrack: 'car', ownerName: cleanName },
+      { code: 'TURTLE-FREE', targetTrack: 'turtle', ownerName: cleanName },
+      { code: 'HOUSE-FREE', targetTrack: 'house', ownerName: cleanName },
+      { code: 'GENAI-FREE', targetTrack: 'genai', ownerName: cleanName }
+    ];
+    localStorage.setItem('smartstart_active_licenses', JSON.stringify(activeLicenses));
+
+    setAuthSuccess(`שלום ${cleanName}! פותח את כל המערכת עם הרשאות מלאות...`);
+    setTimeout(() => {
+      navigate('/tracks');
+    }, 350);
+  };
+
+  const handleGuestEntry = handleMasterFreeEntry;
+
   // 3 Annual Tiered Plans
   const annualPlans = [
     {
@@ -424,17 +505,17 @@ function AuthPage() {
         {/* 📦 Container Card */}
         <div style={{
           width: '100%',
-          maxWidth: authMode === 'pricing' ? '980px' : '490px',
+          maxWidth: authMode === 'pricing' ? '980px' : authMode === 'free' ? '540px' : '500px',
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRadius: '28px',
           border: '1.5px solid rgba(226, 232, 240, 0.95)',
           boxShadow: '0 25px 65px -12px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(255, 255, 255, 0.8) inset',
-          padding: authMode === 'pricing' ? '36px 28px' : '36px 32px',
+          padding: authMode === 'pricing' ? '36px 28px' : '36px 28px',
           textAlign: 'center',
           boxSizing: 'border-box'
         }}>
-          {/* Main 3 Navigation Tabs: כניסת תלמיד | כניסת מנוי / משתמש | הרשמה ומסלולים */}
+          {/* Main 4 Navigation Tabs: כניסת תלמיד | כניסת מנוי / משתמש | הרשמה ומסלולים | כניסה חופשית */}
           <div style={{
             display: 'flex',
             background: '#f1f5f9',
@@ -448,13 +529,13 @@ function AuthPage() {
               onClick={() => { setAuthMode('student'); setAuthError(''); setAuthSuccess(''); }}
               style={{
                 flex: 1,
-                padding: '12px 10px',
+                padding: '12px 6px',
                 borderRadius: '12px',
                 border: 'none',
                 background: authMode === 'student' ? '#ffffff' : 'transparent',
                 color: authMode === 'student' ? '#0f172a' : '#64748b',
                 fontWeight: '800',
-                fontSize: '0.92rem',
+                fontSize: '0.88rem',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 boxShadow: authMode === 'student' ? '0 3px 10px rgba(0,0,0,0.06)' : 'none',
@@ -469,20 +550,20 @@ function AuthPage() {
               onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
               style={{
                 flex: 1,
-                padding: '12px 10px',
+                padding: '12px 6px',
                 borderRadius: '12px',
                 border: 'none',
                 background: authMode === 'login' ? '#ffffff' : 'transparent',
                 color: authMode === 'login' ? '#4f46e5' : '#64748b',
                 fontWeight: '800',
-                fontSize: '0.92rem',
+                fontSize: '0.88rem',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 boxShadow: authMode === 'login' ? '0 3px 10px rgba(79, 70, 229, 0.12)' : 'none',
                 transition: 'all 0.2s'
               }}
             >
-              🔑 כניסת משתמש ומנוי
+              🔑 כניסת מנוי
             </button>
 
             <button
@@ -490,13 +571,13 @@ function AuthPage() {
               onClick={() => { setAuthMode('pricing'); setAuthError(''); setAuthSuccess(''); }}
               style={{
                 flex: 1,
-                padding: '12px 10px',
+                padding: '12px 6px',
                 borderRadius: '12px',
                 border: 'none',
                 background: (authMode === 'pricing' || authMode === 'register') ? '#ffffff' : 'transparent',
                 color: (authMode === 'pricing' || authMode === 'register') ? '#0f172a' : '#64748b',
                 fontWeight: '800',
-                fontSize: '0.92rem',
+                fontSize: '0.88rem',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 boxShadow: (authMode === 'pricing' || authMode === 'register') ? '0 3px 10px rgba(0,0,0,0.06)' : 'none',
@@ -504,6 +585,27 @@ function AuthPage() {
               }}
             >
               ✨ הרשמה ומסלולים
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setAuthMode('free'); setAuthError(''); setAuthSuccess(''); }}
+              style={{
+                flex: 1,
+                padding: '12px 6px',
+                borderRadius: '12px',
+                border: 'none',
+                background: authMode === 'free' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
+                color: authMode === 'free' ? '#ffffff' : '#047857',
+                fontWeight: '800',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                boxShadow: authMode === 'free' ? '0 4px 14px rgba(16, 185, 129, 0.28)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              🚀 כניסה חופשית
             </button>
           </div>
 
@@ -1055,6 +1157,113 @@ function AuthPage() {
                   }}
                 >
                   {isAuthLoading ? 'פותח חשבון...' : '🚀 הרשם והיכנס למסלול שלך'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* 4. 🚀 MASTER FULL FREE ACCESS VIEW (הכל פתוח במלואו ללא הגבלות או שרת) */}
+          {authMode === 'free' && (
+            <div>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '20px',
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                border: '1.5px solid #a7f3d0',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                marginBottom: '16px',
+                boxShadow: '0 8px 20px rgba(16, 185, 129, 0.15)'
+              }}>
+                🚀
+              </div>
+
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', margin: '0 0 8px 0', color: '#0f172a' }}>
+                כניסה חופשית לכל המערכת
+              </h2>
+              <p style={{ color: '#475569', fontSize: '0.94rem', margin: '0 0 22px 0', lineHeight: 1.6, fontWeight: '500' }}>
+                התנסות מלאה וחופשית בכל יכולות הפלטפורמה — ללא צורך בהרשמה, סיסמה או תלות בשרת חיצוני. הכל פתוח ומוכן לעבודה!
+              </p>
+
+              <form onSubmit={handleMasterFreeEntry}>
+                <div style={{ marginBottom: '24px', textAlign: 'right' }}>
+                  <label style={{ display: 'block', fontSize: '0.92rem', fontWeight: '800', color: '#1e293b', marginBottom: '8px' }}>
+                    👤 הזן את שמך (שיופיע במערכת):
+                  </label>
+                  <input
+                    type="text"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="לדוגמה: המורה שמעון, דניאל..."
+                    autoFocus
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px',
+                      borderRadius: '14px',
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: '1.02rem',
+                      fontFamily: 'inherit',
+                      background: '#fcfdfe',
+                      color: '#0f172a',
+                      textAlign: 'right',
+                      fontWeight: '700',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#10b981'}
+                    onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                  />
+                </div>
+
+                {authSuccess && (
+                  <div style={{
+                    color: '#15803d',
+                    fontSize: '0.92rem',
+                    marginBottom: '18px',
+                    fontWeight: '700',
+                    background: '#f0fdf4',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #bbf7d0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>✓</span>
+                    <span>{authSuccess}</span>
+                  </div>
+                )}
+
+                {/* Primary button to enter EVERYTHING */}
+                <button
+                  type="submit"
+                  style={{
+                    width: '100%',
+                    padding: '16px 24px',
+                    borderRadius: '16px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff',
+                    fontWeight: '900',
+                    fontSize: '1.08rem',
+                    fontFamily: 'inherit',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 25px rgba(16, 185, 129, 0.35)',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px'
+                  }}
+                >
+                  <span>🚀</span>
+                  <span>כניסה לכל המערכת עכשיו (הכל פתוח)</span>
                 </button>
               </form>
             </div>

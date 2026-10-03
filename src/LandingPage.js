@@ -403,11 +403,12 @@ export default function LandingPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '18px',
-            flexWrap: 'wrap'
+            gap: '24px',
+            flexWrap: 'nowrap',
+            width: '100%'
           }}>
             {/* 🌟 Significantly Enlarged, Clear Official Logo */}
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '16px', textDecoration: 'none' }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '16px', textDecoration: 'none', flexShrink: 0 }}>
               <div style={{
                 width: '78px',
                 height: '78px',
@@ -439,13 +440,15 @@ export default function LandingPage() {
               </div>
             </Link>
 
-            {/* Clean Navigation Links with Icons */}
+            {/* Clean Navigation Links with Icons (Centered) */}
             <nav style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '24px',
+              justifyContent: 'center',
+              gap: '28px',
               fontSize: '0.96rem',
-              fontWeight: '600'
+              fontWeight: '600',
+              flex: 1
             }}>
               <a href="#tracks" style={{ color: '#334155', textDecoration: 'none', transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Layers size={17} color="#2563eb" />
@@ -465,8 +468,8 @@ export default function LandingPage() {
               </a>
             </nav>
 
-            {/* Action CTAs */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Action CTAs (On Opposite Left Side) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
               <button
                 onClick={() => navigate('/login?tab=student')}
                 className="btn-glass-code"

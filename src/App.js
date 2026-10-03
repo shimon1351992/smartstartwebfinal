@@ -144,7 +144,7 @@ function Home() {
 
     // Teachers always see all tracks!
     if (currentUser) {
-      return learningTracks;
+      return allTracks;
     }
     // If student is logged in with assigned tracks, filter accordingly
     if (currentStudent && currentStudent.assignedTracks && !currentStudent.assignedTracks.includes('all')) {
