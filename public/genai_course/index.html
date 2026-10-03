@@ -2,6 +2,7 @@
 <html dir="rtl" lang="he">
 <head>
 <meta charset="utf-8"/>
+<base href="/genai_course/"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>עולם של יצירה, עיצוב, AI ואפליקציות</title>
 <style>
@@ -36,6 +37,15 @@ h1{margin:0 0 6px;font-size:clamp(28px,4.3vw,48px);line-height:1.05;letter-spaci
   cursor:pointer;
   transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
 }
+
+/* 🎨 Dedicated CSS classes for each unit card - bypasses any HTML attribute rewriting */
+.card-unit-1 { background-image: url('assets/skyland-unit-01.png') !important; }
+.card-unit-2 { background-image: url('assets/skyland-unit-02.png') !important; }
+.card-unit-3 { background-image: url('assets/skyland-unit-03.png') !important; }
+.card-unit-4 { background-image: url('assets/skyland-unit-04.png') !important; }
+.card-unit-5 { background-image: url('assets/skyland-unit-05.png') !important; }
+.card-unit-6 { background-image: url('assets/skyland-unit-06.png') !important; }
+
 .unit-card::before{
   content:"";
   position:absolute;
@@ -114,37 +124,37 @@ h1{margin:0 0 6px;font-size:clamp(28px,4.3vw,48px);line-height:1.05;letter-spaci
 <span>👨‍🏫 מורה + 🧑‍🎨 תלמיד</span>
 </div>
 <section class="cards">
-<a class="unit-card" href="unit-01.html" style="background-image:url('assets/skyland-unit-01.png'); --card-image:url('assets/skyland-unit-01.png')">
+<a class="unit-card card-unit-1" href="unit-01.html">
   <div class="unit-overlay">
     <h3>ממציאים ובונים עולם</h3>
     <div class="unit-number">יחידה 1</div>
   </div>
 </a>
-<a class="unit-card" href="unit-02.html" style="background-image:url('assets/skyland-unit-02.png'); --card-image:url('assets/skyland-unit-02.png')">
+<a class="unit-card card-unit-2" href="unit-02.html">
   <div class="unit-overlay">
     <h3>משיקים את העולם</h3>
     <div class="unit-number">יחידה 2</div>
   </div>
 </a>
-<a class="unit-card" href="unit-03.html" style="background-image:url('assets/skyland-unit-03.png'); --card-image:url('assets/skyland-unit-03.png')">
+<a class="unit-card card-unit-3" href="unit-03.html">
   <div class="unit-overlay">
     <h3>סטודיו יצירה בתלת־ממד</h3>
     <div class="unit-number">יחידה 3</div>
   </div>
 </a>
-<a class="unit-card" href="unit-04.html" style="background-image:url('assets/skyland-unit-04.png'); --card-image:url('assets/skyland-unit-04.png')">
+<a class="unit-card card-unit-4" href="unit-04.html">
   <div class="unit-overlay">
     <h3>בונים את האתר</h3>
     <div class="unit-number">יחידה 4</div>
   </div>
 </a>
-<a class="unit-card" href="unit-05.html" style="background-image:url('assets/skyland-unit-05.png'); --card-image:url('assets/skyland-unit-05.png')">
+<a class="unit-card card-unit-5" href="unit-05.html">
   <div class="unit-overlay">
     <h3>בונים את אפליקציית ה־Web</h3>
     <div class="unit-number">יחידה 5</div>
   </div>
 </a>
-<a class="unit-card" href="unit-06.html" style="background-image:url('assets/skyland-unit-06.png'); --card-image:url('assets/skyland-unit-06.png')">
+<a class="unit-card card-unit-6" href="unit-06.html">
   <div class="unit-overlay">
     <h3>סטארטאפ ופרויקט גמר</h3>
     <div class="unit-number">יחידה 6</div>
