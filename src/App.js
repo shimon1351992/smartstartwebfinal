@@ -17,11 +17,14 @@ import CustomTrackCreator from './CustomTrackCreator';
 import CustomTrackStudio from './CustomTrackStudio';
 import GenAIWebTrack from './GenAIWebTrack';
 import HTMLEditorStudio from './HTMLEditorStudio';
+import LegoWeDoTrack from './LegoWeDoTrack';
+import WebBlocksAITrack from './WebBlocksAITrack';
+import AIWebBuilderStudio from './AIWebBuilderStudio';
 import { getActiveServerUrl } from './serverPort';
 
 import LandingPage from './LandingPage';
 import DriverModal from './DriverModal';
-import { CAR_4WD_HERO, SMARTHOUSE_HERO, TURTLE_HERO } from './projectImages';
+import { CAR_4WD_HERO, SMARTHOUSE_HERO, TURTLE_HERO, LEGO_WEDO_HERO, WEBBLOCKS_AI_HERO } from './projectImages';
 
 // 🚀 Learning Dashboard Home Component
 function Home() {
@@ -123,6 +126,26 @@ function Home() {
       badges: ["30 מפגשים", "6 יחידות", "Canva & AI", "3D & Web Apps"],
       gradient: "linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #06b6d4 100%)",
       glow: "0 0 30px rgba(99, 102, 241, 0.35)"
+    },
+    {
+      to: "/wedo",
+      title: "לגו רובוטיקה WeDo 2.0",
+      description: "הרכבה מכאנית צעד-אחר-צעד: מכונית מירוץ ומכונית מתוך ערכת 45300, כולל תכנות בלוקים וחוברות PDF להורדה.",
+      imgUrl: LEGO_WEDO_HERO,
+      badges: ["WeDo 2.0", "מכונית מירוץ", "מכונית", "ערכה 45300"],
+      gradient: "linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%)",
+      glow: "0 0 30px rgba(2, 132, 199, 0.35)",
+      trackKey: "wedo"
+    },
+    {
+      to: "/web-ai-track",
+      title: "סדנת יצירת משחקים ב-AI",
+      description: "סדנה חווייתית (90 דק׳): כל תלמיד ממציא ובונה משחק משלו ב-Gemini החינמי, מוסיף מלכודות ומכשולים למתחרים — ובסוף כולם מתחלפים ומתחרים בטורניר הכיתה הגדול!",
+      imgUrl: WEBBLOCKS_AI_HERO,
+      badges: ["סדנה • 90 דק׳", "Gemini חינמי", "מלכודות ושיאים", "🏆 טורניר כיתתי"],
+      gradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)",
+      glow: "0 0 30px rgba(139, 92, 246, 0.35)",
+      trackKey: "webai"
     }
   ], []);
 
@@ -153,6 +176,8 @@ function Home() {
         if (track.to === '/FreenoveCar' && assigned.includes('car')) return true;
         if (track.to === '/RobotSmall' && assigned.includes('turtle')) return true;
         if (track.to === '/smarthouse' && assigned.includes('house')) return true;
+        if (track.to === '/wedo' && (assigned.includes('wedo') || assigned.includes('lego'))) return true;
+        if (track.to === '/web-ai-track' && (assigned.includes('webai') || assigned.includes('webblocks'))) return true;
         if (track.trackKey && assigned.includes(track.trackKey)) return true;
         return false;
       });
@@ -211,6 +236,22 @@ function Home() {
       badges: ["HTML5 / CSS3", "AI Web Blocks", "Monaco Editor"],
       gradient: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)",
       glow: "0 0 30px rgba(14, 165, 233, 0.3)"
+    },
+    {
+      to: "/htmleditor",
+      title: "עורך קוד חי לבניית אתרים",
+      description: "כתיבת קוד אתר מאפס (HTML5, CSS3 ו-JavaScript) מתוך שלד בסיסי נקי, עם תצוגה חיה בזמן אמת והורדת קובץ האתר.",
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <polyline points="10 13 8 15 10 17"/>
+          <polyline points="14 13 16 15 14 17"/>
+        </svg>
+      ),
+      badges: ["HTML5 / CSS3 / JS", "Live Preview", "כתיבה מאפס"],
+      gradient: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+      glow: "0 0 30px rgba(16, 185, 129, 0.3)"
     },
     {
       to: "/CodeEditor",
@@ -807,7 +848,10 @@ function Home() {
                     height: '210px',
                     position: 'relative',
                     overflow: 'hidden',
-                    background: '#f1f5f9'
+                    background: mod.imgBg || '#f1f5f9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
                     <img 
                       src={mod.imgUrl} 
@@ -815,9 +859,10 @@ function Home() {
                       style={{ 
                         width: '100%', 
                         height: '100%', 
-                        objectFit: 'cover',
+                        objectFit: mod.imgFit || 'cover',
                         objectPosition: 'center',
-                        display: 'block'
+                        display: 'block',
+                        padding: mod.imgFit === 'contain' ? '8px' : '0'
                       }}
                     />
                     <div style={{
@@ -826,7 +871,8 @@ function Home() {
                       left: 0,
                       right: 0,
                       height: '60px',
-                      background: 'linear-gradient(to top, rgba(255, 255, 255, 0.9), transparent)'
+                      background: 'linear-gradient(to top, rgba(255, 255, 255, 0.95), transparent)',
+                      pointerEvents: 'none'
                     }} />
                   </div>
                 )}
@@ -1306,6 +1352,11 @@ function App() {
         <Route path="/htmleditor" element={<HTMLEditorStudio />} />
         <Route path="/html-editor" element={<HTMLEditorStudio />} />
         <Route path="/FreenoveCar" element={<FreenoveCar />} />
+        <Route path="/wedo" element={<LegoWeDoTrack />} />
+        <Route path="/lego-wedo" element={<LegoWeDoTrack />} />
+        <Route path="/web-ai-track" element={<WebBlocksAITrack />} />
+        <Route path="/webblocks-track" element={<WebBlocksAITrack />} />
+        <Route path="/ai-web-studio" element={<AIWebBuilderStudio />} />
       </Routes>
     </Router>
   );

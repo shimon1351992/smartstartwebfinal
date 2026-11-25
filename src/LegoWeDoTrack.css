@@ -1,0 +1,1128 @@
+/* ==========================================================================
+   Lego WeDo 2.0 Track Styles - Authentic LEGO Education UI & Modern SmartStart
+   ========================================================================== */
+
+.wedo-page-container {
+  width: 100%;
+  min-height: 100vh;
+  background: #f1f5f9;
+  color: #0f172a;
+  direction: rtl;
+  font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.wedo-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #ffffff;
+  border-bottom: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wedo-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wedo-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #1e293b;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wedo-back-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateX(2px);
+}
+
+.wedo-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.wedo-main-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.wedo-subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+.wedo-set-badge {
+  padding: 6px 14px;
+  background: #0284c7;
+  color: #ffffff;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+/* Main Content Area */
+.wedo-main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Project Selector Cards */
+.wedo-project-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.wedo-project-card {
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: right;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.wedo-project-card:hover {
+  border-color: #0284c7;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12);
+}
+
+.wedo-project-card.active {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.18);
+}
+
+.wedo-project-card.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 6px;
+  background: #0284c7;
+}
+
+.wedo-proj-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wedo-proj-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.wedo-proj-time {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.wedo-proj-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 4px 0 0;
+}
+
+.wedo-proj-desc {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Tab Bar (Assembly / Coding / Parts) */
+.wedo-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.wedo-mode-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wedo-mode-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.wedo-mode-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+/* Stepper Bar */
+.wedo-stepper {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow-x: auto;
+}
+
+.wedo-step-circle-btn {
+  flex: 1;
+  min-width: 50px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.wedo-step-circle-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.wedo-step-circle-btn.current {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  transform: scale(1.04);
+}
+
+.wedo-step-circle-btn.done {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #059669;
+}
+
+.wedo-step-num {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.wedo-step-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   OFFICIAL LEGO WEDO 2.0 INSTRUCTION STAGE
+   ========================================================================== */
+
+.wedo-stage-card {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  overflow: hidden;
+  position: relative;
+  min-height: 480px;
+}
+
+@media (max-width: 900px) {
+  .wedo-stage-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Canvas: Building Model Area */
+.wedo-canvas-area {
+  background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-left: 1.5px solid #e2e8f0;
+}
+
+/* Authentic WeDo Callout Parts Box at Top Corner */
+.wedo-parts-callout-box {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+  min-width: 160px;
+  backdrop-filter: blur(4px);
+}
+
+.wedo-callout-header {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wedo-callout-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wedo-callout-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.wedo-callout-item-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wedo-callout-item-qty {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #0284c7;
+  background: #e0f2fe;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+/* Step Big Number Badge */
+.wedo-step-big-badge {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #0284c7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
+  z-index: 10;
+}
+
+/* Model Diagram Canvas */
+.wedo-model-diagram-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right Panel: Instructions & Navigation */
+.wedo-info-panel {
+  background: #ffffff;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.wedo-step-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 14px;
+}
+
+.wedo-step-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.wedo-complete-toggle-btn {
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.wedo-complete-toggle-btn.done {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #059669;
+}
+
+.wedo-instruction-box {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #334155;
+  font-weight: 500;
+}
+
+.wedo-protip-box {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.wedo-protip-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Nav Action Buttons */
+.wedo-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1.5px solid #f1f5f9;
+}
+
+.wedo-nav-btn {
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.wedo-nav-btn-prev {
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+}
+
+.wedo-nav-btn-prev:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.wedo-nav-btn-prev:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wedo-nav-btn-next {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.wedo-nav-btn-next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+}
+
+/* ==========================================================================
+   CODING LAB SECTION (WEDO 2.0 BLOCKS STYLE)
+   ========================================================================== */
+
+.wedo-coding-card {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wedo-coding-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding-bottom: 16px;
+}
+
+.wedo-coding-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wedo-blocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.wedo-block-card {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.wedo-block-card:hover {
+  border-color: #0284c7;
+  transform: translateY(-2px);
+}
+
+.wedo-block-icon {
+  font-size: 1.8rem;
+  width: 48px;
+  height: 48px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.wedo-block-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wedo-block-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.wedo-block-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.wedo-success-banner {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #a7f3d0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wedo-success-text h4 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #065f46;
+  margin: 0 0 4px;
+}
+
+.wedo-success-text p {
+  font-size: 0.85rem;
+  color: #047857;
+  margin: 0;
+}
+
+.wedo-switch-proj-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: #059669;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.wedo-switch-proj-btn:hover {
+  background: #047857;
+  transform: scale(1.03);
+}
+
+/* ==========================================================================
+   OFFICIAL STUDIO 2.0 INSTRUCTION VIEWER & LIGHTBOX
+   ========================================================================== */
+
+.wedo-instruction-image-container {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #cbd5e1;
+  overflow: hidden;
+  cursor: zoom-in;
+  transition: all 0.25s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wedo-instruction-image-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(2, 132, 199, 0.15);
+  border-color: #0284c7;
+}
+
+.wedo-instruction-image {
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+  object-fit: contain;
+  display: block;
+}
+
+.wedo-zoom-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.wedo-instruction-image-container:hover .wedo-zoom-hint {
+  opacity: 1;
+  background: rgba(2, 132, 199, 0.9);
+}
+
+/* Lightbox Modal */
+.wedo-zoom-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: wedoFadeIn 0.2s ease;
+}
+
+@keyframes wedoFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.wedo-zoom-modal-content {
+  position: relative;
+  max-width: 95vw;
+  max-height: 92vh;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wedo-zoom-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.wedo-zoom-modal-close:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.wedo-zoom-modal-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.wedo-zoom-modal-caption {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-weight: 800;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   PROJECT SELECTION LOBBY (עמוד בחירת פרויקטים)
+   ========================================================================== */
+
+.wedo-lobby-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 10px 0 40px;
+}
+
+.wedo-lobby-hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 6px;
+}
+
+.wedo-lobby-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.85rem;
+  font-weight: 800;
+  border: 1px solid #bae6fd;
+}
+
+.wedo-lobby-hero-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.wedo-lobby-hero-desc {
+  font-size: 1.02rem;
+  color: #475569;
+  max-width: 700px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.wedo-lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 28px;
+  width: 100%;
+}
+
+@media (max-width: 540px) {
+  .wedo-lobby-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wedo-lobby-card {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wedo-lobby-card:hover {
+  transform: translateY(-6px);
+  border-color: #0284c7;
+  box-shadow: 0 20px 40px rgba(2, 132, 199, 0.15);
+}
+
+.wedo-lobby-card-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 290px;
+  background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+
+.wedo-lobby-card-image {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  transition: transform 0.35s ease;
+}
+
+.wedo-lobby-card:hover .wedo-lobby-card-image {
+  transform: scale(1.05);
+}
+
+.wedo-lobby-image-overlay {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wedo-lobby-badge-step {
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  backdrop-filter: blur(4px);
+}
+
+.wedo-lobby-badge-time {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.wedo-lobby-card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.wedo-lobby-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wedo-lobby-card-title {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+}
+
+.wedo-lobby-difficulty-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.wedo-lobby-card-desc {
+  font-size: 0.92rem;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.wedo-lobby-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wedo-lobby-tag-chip {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.wedo-lobby-card-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.wedo-lobby-start-btn {
+  flex: 1;
+  padding: 13px 20px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.wedo-lobby-start-btn:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+}
+
+.wedo-lobby-pdf-btn {
+  padding: 13px 18px;
+  border-radius: 14px;
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.wedo-lobby-pdf-btn:hover {
+  background: #ffffff;
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+/* ==========================================================================
+   FULL-WIDTH ASSEMBLY STAGE (NO SIDEBAR!)
+   ========================================================================== */
+
+.wedo-stage-card-fullwidth {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  width: 100%;
+  gap: 20px;
+}
+
+.wedo-instruction-image-container.full-width {
+  width: 100%;
+  max-width: 1150px;
+  min-height: 480px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+  transition: all 0.25s ease;
+}
+
+.wedo-instruction-image-container.full-width:hover {
+  border-color: #0284c7;
+  box-shadow: 0 14px 40px rgba(2, 132, 199, 0.15);
+}
+
+.wedo-instruction-image.full-width {
+  width: 100%;
+  height: auto;
+  max-height: 72vh;
+  object-fit: contain;
+  display: block;
+}
+
+.wedo-fullwidth-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1150px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 12px 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wedo-zoom-btn-action {
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wedo-zoom-btn-action:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+  background: #f0f9ff;
+}
+
+

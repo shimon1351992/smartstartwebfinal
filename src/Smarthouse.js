@@ -12,8 +12,9 @@ import SendCodeModal from './SendCodeModal';
 import SavedProjectModal from './SavedProjectModal';
 import SubscriptionModal, { isTrackUnlocked } from './SubscriptionModal';
 import ComPortStatusBadge from './ComPortStatusBadge';
-import { SMARTHOUSE_HERO } from './projectImages';
+import { SMARTHOUSE_HERO, SMARTHOUSE_KS0085_HERO } from './projectImages';
 import { SMARTHOUSE_H_CODE, SMARTHOUSE_CPP_CODE, SMARTHOUSE_INO_FULL_CODE, mergeSmartHouseBlocks } from './smarthouseCode';
+import { SMART_HOME_KS0085_CHAPTERS } from './smarthouseKS0085Data';
 
 // Base Keyestudio Docs CDN Image URL
 const KEYESTUDIO_IMG_BASE = 'https://docs.keyestudio.com/projects/KS5009/en/latest/_images/';
@@ -1906,16 +1907,26 @@ function Smarthouse() {
   const navigate = useNavigate();
   const isStandalone = new URLSearchParams(window.location.search).get('standalone') === 'true';
 
-  const [smartHouseKit, setSmartHouseKit] = useState('ks5009');
-  const [showKitSelectModal, setShowKitSelectModal] = useState(false);
+  const [smartHouseKit, setSmartHouseKit] = useState(() => {
+    return localStorage.getItem('smarthouse_selected_kit') || 'ks5009';
+  });
+  const [showKitSelectModal, setShowKitSelectModal] = useState(() => {
+    return !localStorage.getItem('smarthouse_selected_kit');
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(isStandalone ? 'workspace' : 'curriculum');
-  const [selectedLessonId, setSelectedLessonId] = useState('ks_welcome');
+  const [selectedLessonId, setSelectedLessonId] = useState(() => {
+    const saved = localStorage.getItem('smarthouse_selected_kit');
+    return saved === 'ks0085' ? 'ks0085_welcome' : 'ks_welcome';
+  });
   const [completedLessons, setCompletedLessons] = useState({});
 
   const handleSelectKitModal = (kit) => {
     setSmartHouseKit(kit);
+    localStorage.setItem('smarthouse_selected_kit', kit);
     setShowKitSelectModal(false);
+    setSelectedBoard(kit === 'ks0085' ? 'uno' : 'esp32');
+    setSelectedLessonId(kit === 'ks0085' ? 'ks0085_welcome' : 'ks_welcome');
   };
 
   const [activeFileTab, setActiveFileTab] = useState('main'); // 'main' | 'header' | 'cpp'
@@ -1938,7 +1949,9 @@ function Smarthouse() {
   const [selectedLockedLesson, setSelectedLockedLesson] = useState(null);
   const [isUnlocked, setIsUnlocked] = useState(() => isTrackUnlocked('smarthouse'));
 
-  const [selectedBoard, setSelectedBoard] = useState('esp32');
+  const [selectedBoard, setSelectedBoard] = useState(() => {
+    return localStorage.getItem('smarthouse_selected_kit') === 'ks0085' ? 'uno' : 'esp32';
+  });
   const [comPort, setComPort] = useState('COM3');
   const [filename, setFilename] = useState('smarthouse_main.ino');
   const [isEditorVisible, setIsEditorVisible] = useState(true);
@@ -1952,7 +1965,7 @@ function Smarthouse() {
 
   const isLessonFree = (lessonId) => {
     if (isTrackUnlocked('smarthouse')) return true;
-    return lessonId === 'ks_welcome' || lessonId.startsWith('intro_') || lessonId === 'ks_step_1.1' || lessonId === 'ks_step_1.2' || lessonId === '2.1';
+    return lessonId === 'ks_welcome' || lessonId === 'ks0085_welcome' || lessonId.startsWith('intro_') || lessonId === 'ks_step_1.1' || lessonId === 'ks_step_1.2' || lessonId === 'ks0085_step_1' || lessonId === 'ks0085_step_2' || lessonId === '2.1';
   };
 
   const handleLessonClick = (lesson) => {
@@ -1985,6 +1998,10 @@ function Smarthouse() {
     }
   };
 
+  const activeChapters = useMemo(() => {
+    return smartHouseKit === 'ks0085' ? SMART_HOME_KS0085_CHAPTERS : SMART_HOME_CHAPTERS;
+  }, [smartHouseKit]);
+
   // Active Lesson or Chapter Mission Briefing lookup
   let currentLesson = null;
   let currentChapter = null;
@@ -1993,9 +2010,9 @@ function Smarthouse() {
   if (selectedLessonId.startsWith('intro_')) {
     const chKey = selectedLessonId.replace('intro_', '');
     currentBriefing = CHAPTER_BRIEFINGS[chKey] || CHAPTER_BRIEFINGS['ch1'];
-    currentChapter = SMART_HOME_CHAPTERS.find(c => c.id === chKey) || SMART_HOME_CHAPTERS[0];
+    currentChapter = activeChapters.find(c => c.id === chKey) || activeChapters[0];
   } else {
-    SMART_HOME_CHAPTERS.forEach(ch => {
+    activeChapters.forEach(ch => {
       ch.lessons.forEach(l => {
         if (l.id === selectedLessonId) {
           currentLesson = l;
@@ -2005,16 +2022,18 @@ function Smarthouse() {
     });
 
     if (!currentLesson) {
-      currentLesson = SMART_HOME_ASSEMBLY_ALL[0];
-      currentChapter = SMART_HOME_CHAPTERS[0];
+      currentLesson = activeChapters[0].lessons[0];
+      currentChapter = activeChapters[0];
     }
   }
 
   // Linear sequence of all navigable pages (Chapter Briefings + Lessons)
   const ALL_SEQUENCE_ITEMS = useMemo(() => {
     const seq = [];
-    SMART_HOME_CHAPTERS.forEach(ch => {
-      seq.push({ id: `intro_${ch.id}`, title: `📋 תדריך משימה: ${ch.title}`, isBriefing: true, chapterId: ch.id });
+    activeChapters.forEach(ch => {
+      if (CHAPTER_BRIEFINGS[ch.id]) {
+        seq.push({ id: `intro_${ch.id}`, title: `📋 תדריך משימה: ${ch.title}`, isBriefing: true, chapterId: ch.id });
+      }
       ch.lessons.forEach(l => {
         if (!l.isWelcomePage) {
           seq.push(l);
@@ -2022,13 +2041,13 @@ function Smarthouse() {
       });
     });
     return seq;
-  }, []);
+  }, [activeChapters]);
 
   const currentSequenceIndex = ALL_SEQUENCE_ITEMS.findIndex(item => item.id === selectedLessonId);
 
   // Calculate Total Lessons across all chapters (excluding welcome)
   let totalLessonsCount = 0;
-  SMART_HOME_CHAPTERS.forEach(ch => {
+  activeChapters.forEach(ch => {
     totalLessonsCount += ch.lessons.filter(l => !l.isWelcomePage).length;
   });
 
@@ -2641,10 +2660,33 @@ function Smarthouse() {
               <span>🏠</span>
               <span>חזרה למסלולים</span>
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="builder-brand-title" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0f172a' }}>
-                🏡 בית חכם IoT Keyestudio (KS5009)
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="builder-brand-title" style={{ fontSize: '1.2rem', fontWeight: '900', color: '#0f172a' }}>
+                {smartHouseKit === 'ks0085' ? '🏡 בית חכם Arduino Uno (KS0085)' : '🏡 בית חכם IoT Keyestudio (KS5009)'}
               </span>
+              <button
+                type="button"
+                onClick={() => setShowKitSelectModal(true)}
+                style={{
+                  background: '#f1f5f9',
+                  border: '1.5px solid #cbd5e1',
+                  color: '#334155',
+                  padding: '5px 12px',
+                  borderRadius: '10px',
+                  fontSize: '0.82rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+              >
+                <span>🔄</span>
+                <span>החלף ערכה</span>
+              </button>
             </div>
           </div>
 
@@ -2796,7 +2838,7 @@ function Smarthouse() {
 
             {/* Chapters Accordion / List */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {SMART_HOME_CHAPTERS.map(ch => {
+              {activeChapters.map(ch => {
                 const chapterLessons = ch.lessons.filter(l => !l.isWelcomePage);
                 const chapterDoneCount = chapterLessons.filter(l => completedLessons[l.id]).length;
                 const isCurrentChapter = currentChapter && currentChapter.id === ch.id;
@@ -2897,43 +2939,73 @@ function Smarthouse() {
         </>
       )}
 
-      {/* 🔙 TOP-LEFT CLEAN BACK BUTTON (FOR WELCOME LANDING ONLY) */}
+      {/* 🔙 TOP-LEFT CLEAN BACK BUTTON + SWITCH KIT (FOR WELCOME LANDING ONLY) */}
       {currentLesson?.isWelcomePage && (
-        <button
-          onClick={handleGoBack}
-          style={{
-            position: 'fixed',
-            top: '24px',
-            left: '24px',
-            zIndex: 9999,
-            padding: '12px 24px',
-            borderRadius: '16px',
-            background: 'rgba(255, 255, 255, 0.15)',
-            border: '1.5px solid rgba(255, 255, 255, 0.3)',
-            color: '#ffffff',
-            fontSize: '1rem',
-            fontWeight: '800',
-            cursor: 'pointer',
-            backdropFilter: 'blur(16px)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
-            transition: 'all 0.25s ease',
-            fontFamily: "'Rubik', sans-serif"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
-            e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-          }}
-        >
-          <span style={{ fontSize: '1.2rem', lineHeight: '1' }}>←</span>
-          <span>חזרה</span>
-        </button>
+        <div style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 9999, display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={handleGoBack}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: '1.5px solid rgba(255, 255, 255, 0.3)',
+              color: '#ffffff',
+              fontSize: '1rem',
+              fontWeight: '800',
+              cursor: 'pointer',
+              backdropFilter: 'blur(16px)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.25s ease',
+              fontFamily: "'Rubik', sans-serif"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            }}
+          >
+            <span style={{ fontSize: '1.2rem', lineHeight: '1' }}>←</span>
+            <span>חזרה</span>
+          </button>
+
+          <button
+            onClick={() => setShowKitSelectModal(true)}
+            style={{
+              padding: '12px 20px',
+              borderRadius: '16px',
+              background: 'rgba(15, 23, 42, 0.85)',
+              border: '1.5px solid rgba(244, 63, 94, 0.55)',
+              color: '#ffffff',
+              fontSize: '0.94rem',
+              fontWeight: '800',
+              cursor: 'pointer',
+              backdropFilter: 'blur(16px)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.25s ease',
+              fontFamily: "'Rubik', sans-serif"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#e11d48';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.85)';
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            }}
+          >
+            <span>🔄</span>
+            <span>החלף דגם ערכה ({smartHouseKit === 'ks0085' ? 'KS0085 Arduino' : 'KS5009 ESP32'})</span>
+          </button>
+        </div>
       )}
 
       {/* MAIN LAYOUT */}
@@ -3200,7 +3272,7 @@ function Smarthouse() {
                       {currentChapter ? currentChapter.title : ''}
                     </span>
                     <span style={{ fontSize: '0.82rem', padding: '5px 12px', borderRadius: '10px', background: 'rgba(6, 182, 212, 0.25)', color: '#67e8f9', fontWeight: '800', border: '1px solid rgba(6, 182, 212, 0.45)' }}>
-                      🏡 KS5009 Smart Home IoT
+                      {smartHouseKit === 'ks0085' ? '🏡 KS0085 Smart Home Arduino' : '🏡 KS5009 Smart Home IoT'}
                     </span>
                   </div>
                   <span style={{ fontSize: '0.94rem', color: '#fecdd3', fontWeight: '900', textShadow: '0 0 10px rgba(244, 63, 94, 0.5)' }}>
@@ -3261,7 +3333,7 @@ function Smarthouse() {
                         marginBottom: '18px',
                         boxShadow: '0 0 20px rgba(244, 63, 94, 0.25)'
                       }}>
-                        ✨ ערכת בית חכם IoT מלאה (Keyestudio KS5009)
+                        {smartHouseKit === 'ks0085' ? '✨ ערכת בית חכם Arduino (Keyestudio KS0085)' : '✨ ערכת בית חכם IoT מלאה (Keyestudio KS5009)'}
                       </div>
 
                       <h1 style={{
@@ -3272,7 +3344,7 @@ function Smarthouse() {
                         color: '#ffffff',
                         textShadow: '0 4px 20px rgba(0,0,0,0.8), 0 0 30px rgba(244, 63, 94, 0.35)'
                       }}>
-                        🏡 בנו ותכנתו בית חכם IoT אוטונומי מלא!
+                        {smartHouseKit === 'ks0085' ? '🏡 הרכיבו וחווטו את הבית החכם Keyestudio KS0085!' : '🏡 בנו ותכנתו בית חכם IoT אוטונומי מלא!'}
                       </h1>
 
                       <p style={{
@@ -3288,7 +3360,7 @@ function Smarthouse() {
 
                       <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
                         <button 
-                          onClick={() => setSelectedLessonId('intro_ch1')} 
+                          onClick={() => setSelectedLessonId(smartHouseKit === 'ks0085' ? 'ks0085_step_1' : 'intro_ch1')} 
                           style={{
                             padding: '18px 42px',
                             borderRadius: '16px',
@@ -3348,7 +3420,7 @@ function Smarthouse() {
                         backdropFilter: 'blur(10px)',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                       }}>
-                        📸 דגם מוגמר סופי · Smart House IoT ESP32
+                        {smartHouseKit === 'ks0085' ? '📸 דגם מוגמר סופי · Smart Home Arduino KS0085' : '📸 דגם מוגמר סופי · Smart House IoT ESP32'}
                       </div>
 
                       {/* Smart house showcase */}
@@ -3366,12 +3438,12 @@ function Smarthouse() {
                         background: 'radial-gradient(circle at center, rgba(30, 27, 75, 0.6) 0%, rgba(10, 16, 36, 0.95) 100%)'
                       }}>
                         <img 
-                          src={SMARTHOUSE_HERO} 
+                          src={smartHouseKit === 'ks0085' ? SMARTHOUSE_KS0085_HERO : SMARTHOUSE_HERO} 
                           alt="Smart House IoT Model"
                           style={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'contain',
+                            objectFit: 'cover',
                             objectPosition: 'center',
                             display: 'block'
                           }}
@@ -3380,18 +3452,37 @@ function Smarthouse() {
 
                       {/* Spec chips */}
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '14px', width: '100%' }}>
-                        <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fda4af', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
-                          ⚡ בקר ESP32 חזק
-                        </span>
-                        <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#38bdf8', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
-                          🌡️ 13 חיישני סביבה
-                        </span>
-                        <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#34d399', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
-                          💳 כניסה RFID וסרוו
-                        </span>
-                        <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#facc15', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
-                          ☁️ תקשורת ענן IoT
-                        </span>
+                        {smartHouseKit === 'ks0085' ? (
+                          <>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fda4af', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              ⚡ לוח Arduino PLUS + V5
+                            </span>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#38bdf8', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              🌡️ 14 חיישנים ומודולים
+                            </span>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#34d399', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              🚪 סרוו חלון ודלת
+                            </span>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#facc15', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              📶 תמיכה ב-Wi-Fi ESP8266
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#fda4af', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              ⚡ בקר ESP32 חזק
+                            </span>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#38bdf8', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              🌡️ 13 חיישני סביבה
+                            </span>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#34d399', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              💳 כניסה RFID וסרוו
+                            </span>
+                            <span style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#facc15', fontSize: '0.78rem', fontWeight: '800', padding: '5px 12px', borderRadius: '10px' }}>
+                              ☁️ תקשורת ענן IoT
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3498,18 +3589,24 @@ function Smarthouse() {
                   )}
                 </div>
 
-                {/* 15 WIRING STEPS */}
+                {/* WIRING STEPS */}
                 {currentLesson.wiringList && Array.isArray(currentLesson.wiringList) && (
                   <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
                     <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: '28px 32px', borderRadius: '24px', border: '2px solid #6366f1', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <span style={{ fontSize: '2.5rem' }}>🔌⚡</span>
                         <div>
-                          <h3 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '950' }}>מדריך חיווט מלא של כל 13 המודולים והרכיבים ל-ESP32 PLUS</h3>
-                          <p style={{ margin: '6px 0 0 0', fontSize: '0.95rem', color: '#c7d2fe', fontWeight: '600' }}>עקבו אחר חיבורי הפינים והאיורים המפורטים מטה עבור כל רכיב ומודול בנפרד (15 שלבי חיווט מפורטים):</p>
+                          <h3 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '950' }}>
+                            {smartHouseKit === 'ks0085' ? 'מדריך חיווט מלא של כל הרכיבים ללוח ההרחבה (Arduino V5 Shield)' : 'מדריך חיווט מלא של כל 13 המודולים והרכיבים ל-ESP32 PLUS'}
+                          </h3>
+                          <p style={{ margin: '6px 0 0 0', fontSize: '0.95rem', color: '#c7d2fe', fontWeight: '600' }}>
+                            {smartHouseKit === 'ks0085' ? 'עקבו אחר חיבורי הפינים והתרשימים המפורטים מטה עבור 16 חיבורי החיווט בערכת KS0085:' : 'עקבו אחר חיבורי הפינים והאיורים המפורטים מטה עבור כל רכיב ומודול בנפרד (15 שלבי חיווט מפורטים):'}
+                          </p>
                         </div>
                       </div>
-                      <span style={{ background: '#4f46e5', color: '#ffffff', padding: '8px 20px', borderRadius: '16px', fontSize: '0.95rem', fontWeight: '800' }}>15 חיבורי חומרה</span>
+                      <span style={{ background: '#4f46e5', color: '#ffffff', padding: '8px 20px', borderRadius: '16px', fontSize: '0.95rem', fontWeight: '800' }}>
+                        {currentLesson.wiringList.length} חיבורי חומרה
+                      </span>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', width: '100%' }}>
@@ -3540,7 +3637,9 @@ function Smarthouse() {
                             {wire.boardImg && (
                               <div style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '18px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                 <div style={{ padding: '10px 16px', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                  <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#475569' }}>📸 תמונת תקריב חיווט בלוח ESP32 PLUS</span>
+                                  <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#475569' }}>
+                                    {smartHouseKit === 'ks0085' ? '📸 תמונת תקריב חיווט בלוח ההרחבה Arduino' : '📸 תמונת תקריב חיווט בלוח ESP32 PLUS'}
+                                  </span>
                                   <button onClick={() => setZoomImageSrc(wire.boardImg)} style={{ background: '#ffffff', border: '1px solid #cbd5e1', padding: '4px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: '800', color: '#2563eb' }}>🔍 הגדל</button>
                                 </div>
                                 <div onClick={() => setZoomImageSrc(wire.boardImg)} style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-in' }}>
@@ -3820,16 +3919,67 @@ function Smarthouse() {
             <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🏡</div>
             <h2 style={{ fontSize: '1.9rem', fontWeight: '900', color: '#0f172a', margin: '0 0 10px 0' }}>בחרו את דגם ערכת הבית החכם שלכם</h2>
             <p style={{ color: '#64748b', fontSize: '1.02rem', margin: '0 0 32px 0' }}>SmartStart תומכת בכל דגמי הבית החכם של Keyestudio. בחרו את הדגם שברשותכם:</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', textAlign: 'right' }}>
-              <div onClick={() => handleSelectKitModal('ks5009')} style={{ border: smartHouseKit === 'ks5009' ? '2.5px solid #e11d48' : '2px solid #e2e8f0', background: smartHouseKit === 'ks5009' ? '#fff1f2' : '#ffffff', borderRadius: '24px', padding: '24px', cursor: 'pointer' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0f172a', margin: '0 0 6px 0' }}>בית חכם ESP32 (דגם KS5009)</h3>
-                <p style={{ color: '#475569', fontSize: '0.92rem', lineHeight: '1.6', margin: '0 0 20px 0' }}>ערכת עץ מלאה עם בקר ESP32 מובנה, 13 חיישנים, מסך LCD, RFID, מנועי סרוו ואוורור.</p>
-                <button type="button" style={{ width: '100%', padding: '12px', borderRadius: '14px', background: '#e11d48', color: '#ffffff', border: 'none', fontWeight: '800', cursor: 'pointer' }}>בחר דגם זה והתחל ⬅</button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '22px', textAlign: 'right' }}>
+              <div 
+                onClick={() => handleSelectKitModal('ks5009')} 
+                style={{ 
+                  border: smartHouseKit === 'ks5009' ? '2.5px solid #e11d48' : '2px solid #e2e8f0', 
+                  background: smartHouseKit === 'ks5009' ? '#fff1f2' : '#ffffff', 
+                  borderRadius: '24px', 
+                  padding: '26px 24px', 
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  boxShadow: smartHouseKit === 'ks5009' ? '0 12px 30px rgba(225,29,72,0.18)' : '0 4px 12px rgba(0,0,0,0.04)',
+                  position: 'relative'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>📟 ערכת ESP32</span>
+                  {smartHouseKit === 'ks5009' && (
+                    <span style={{ background: '#e11d48', color: '#ffffff', fontSize: '0.78rem', fontWeight: '800', padding: '4px 12px', borderRadius: '12px' }}>הערכה הפעילה כעת ✓</span>
+                  )}
+                </div>
+                <div style={{ width: '100%', height: '150px', borderRadius: '16px', overflow: 'hidden', marginBottom: '14px', border: '1.5px solid #cbd5e1', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                  <img src={SMARTHOUSE_HERO} alt="בית חכם ESP32" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0' }}>בית חכם ESP32 (דגם KS5009)</h3>
+                <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.6', margin: '0 0 20px 0' }}>
+                  ערכת בית חכם מעץ עם בקר ESP32 מובנה, 13 חיישנים, מודול RFID, מנועי סרוו, 20 שלבי בנייה מכאנית ו-15 שלבי חיווט מפורטים.
+                </p>
+                <button type="button" style={{ width: '100%', padding: '13px', borderRadius: '14px', background: '#e11d48', color: '#ffffff', border: 'none', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(225,29,72,0.3)' }}>
+                  בחר ערכת KS5009 והתחל ⬅
+                </button>
               </div>
-              <div onClick={() => handleSelectKitModal('ks0085')} style={{ border: smartHouseKit === 'ks0085' ? '2.5px solid #e11d48' : '2px solid #e2e8f0', background: smartHouseKit === 'ks0085' ? '#fff1f2' : '#ffffff', borderRadius: '24px', padding: '24px', cursor: 'pointer' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0f172a', margin: '0 0 6px 0' }}>בית חכם Arduino Uno (דגם KS0085)</h3>
-                <p style={{ color: '#475569', fontSize: '0.92rem', lineHeight: '1.6', margin: '0 0 20px 0' }}>ערכת הבית החכם עם לוח Arduino PLUS ומודול ESP8266 חיצוני לתקשורת Wi-Fi.</p>
-                <button type="button" style={{ width: '100%', padding: '12px', borderRadius: '14px', background: '#0f172a', color: '#ffffff', border: 'none', fontWeight: '800', cursor: 'pointer' }}>בחר דגם זה והתחל ⬅</button>
+
+              <div 
+                onClick={() => handleSelectKitModal('ks0085')} 
+                style={{ 
+                  border: smartHouseKit === 'ks0085' ? '2.5px solid #e11d48' : '2px solid #e2e8f0', 
+                  background: smartHouseKit === 'ks0085' ? '#fff1f2' : '#ffffff', 
+                  borderRadius: '24px', 
+                  padding: '26px 24px', 
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  boxShadow: smartHouseKit === 'ks0085' ? '0 12px 30px rgba(225,29,72,0.18)' : '0 4px 12px rgba(0,0,0,0.04)',
+                  position: 'relative'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0f172a' }}>🤖 ערכת Arduino</span>
+                  {smartHouseKit === 'ks0085' && (
+                    <span style={{ background: '#e11d48', color: '#ffffff', fontSize: '0.78rem', fontWeight: '800', padding: '4px 12px', borderRadius: '12px' }}>הערכה הפעילה כעת ✓</span>
+                  )}
+                </div>
+                <div style={{ width: '100%', height: '150px', borderRadius: '16px', overflow: 'hidden', marginBottom: '14px', border: '1.5px solid #cbd5e1', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                  <img src={SMARTHOUSE_KS0085_HERO} alt="בית חכם Arduino Uno" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0' }}>בית חכם Arduino Uno (דגם KS0085)</h3>
+                <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.6', margin: '0 0 20px 0' }}>
+                  ערכת בית חכם עם לוח Arduino PLUS ומודול תקשורת Wi-Fi, 20 שלבי הרכבה מכאנית מלאים ו-16 שלבי חיווט מפורטים לפי התיעוד הרשמי.
+                </p>
+                <button type="button" style={{ width: '100%', padding: '13px', borderRadius: '14px', background: '#0f172a', color: '#ffffff', border: 'none', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(15,23,42,0.25)' }}>
+                  בחר ערכת KS0085 והתחל ⬅
+                </button>
               </div>
             </div>
           </div>

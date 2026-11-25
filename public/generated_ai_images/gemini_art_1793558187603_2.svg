@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B0E0E6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="roadGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#555;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#333;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="800" height="500" fill="url(#skyGradient)" />
+  <path d="M0 300 L800 300 L800 500 L0 500 Z" fill="#4CAF50" />
+  <path d="M0 350 L800 350 L800 500 L0 500 Z" fill="#388E3C" />
+  <path d="M0 380 Q200 360 400 380 Q600 400 800 380 L800 500 L0 500 Z" fill="url(#roadGradient)" />
+  <path d="M350 385 L450 385 L450 400 L350 400 Z" fill="#FFEB3B" />
+  <path d="M100 250 L150 100 L200 250 Z" fill="#2E7D32" />
+  <path d="M110 240 Q125 180 140 240 Z" fill="#4CAF50" />
+  <path d="M600 280 L650 130 L700 280 Z" fill="#2E7D32" />
+  <path d="M610 270 Q625 210 640 270 Z" fill="#4CAF50" />
+  <path d="M250 270 L300 120 L350 270 Z" fill="#2E7D32" />
+  <path d="M260 260 Q275 200 290 260 Z" fill="#4CAF50" />
+  <path d="M480 260 L530 110 L580 260 Z" fill="#2E7D32" />
+  <path d="M490 250 Q505 190 520 250 Z" fill="#4CAF50" />
+  <path d="M300 390 L320 370 L480 370 L500 390 L480 430 L320 430 Z" fill="#FF5722" />
+  <path d="M310 385 L325 375 L475 375 L490 385 L475 425 L325 425 Z" fill="#FF7043" />
+  <rect x="330" y="380" width="40" height="25" rx="5" fill="#212121" />
+  <rect x="430" y="380" width="40" height="25" rx="5" fill="#212121" />
+  <circle cx="345" cy="420" r="15" fill="#212121" />
+  <circle cx="455" cy="420" r="15" fill="#212121" />
+  <circle cx="345" cy="420" r="10" fill="#BDBDBD" />
+  <circle cx="455" cy="420" r="10" fill="#BDBDBD" />
+  <rect x="305" y="395" width="10" height="5" fill="#FFEB3B" />
+  <rect x="485" y="395" width="10" height="5" fill="#FFEB3B" />
+  <path d="M320 390 Q330 380 340 390" fill="none" stroke="#212121" stroke-width="2" />
+  <path d="M460 390 Q470 380 480 390" fill="none" stroke="#212121" stroke-width="2" />
+</svg>

@@ -610,14 +610,18 @@ async function orchestrateTrackGeneration(requestBody = {}) {
   let generatedTrack = null;
 
   // 2. Formulate LLM Prompt with Domain Expert System Prompt
-  const activeApiKey = (process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'YOUR_OPENROUTER_API_KEY_HERE')
-    ? process.env.OPENROUTER_API_KEY
-    : apiKey;
+  const activeGoogleKey = (
+    process.env.google_api_key ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.REACT_APP_GOOGLE_API_KEY ||
+    apiKey ||
+    ''
+  ).trim();
 
-  if (activeApiKey) {
+  if (activeGoogleKey) {
     try {
-      const TARGET_MODEL = 'google/gemini-3.1-pro-preview';
-      console.log(`[Orchestrator] Invoking OpenRouter Gemini 3.1 Pro for Domain: ${domainKey}...`);
+      const TARGET_MODEL = 'gemini-3.5-flash-lite';
+      console.log(`[Orchestrator] Invoking ${TARGET_MODEL} for Domain: ${domainKey}...`);
 
       const systemPrompt = `You are a World-Class Curriculum Architect and Multi-Agent Orchestrator specialized in ${domain.englishName}.
 ${domain.systemPrompt}
@@ -648,32 +652,27 @@ ${(customChapters && customChapters.length > 0)
 ${activeScrapedData?.summary ? `Scraped Web Knowledge:\n${activeScrapedData.summary.substring(0, 3000)}` : ''}
 `;
 
-      const aiRes = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-        model: TARGET_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent }
-        ],
-        temperature: 0.7,
-        max_tokens: 24000,
-        response_format: { type: 'json_object' }
-      }, {
-        headers: {
-          'Authorization': `Bearer ${activeApiKey.trim()}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://smartstart.academy',
-          'X-Title': 'SmartStart Multi-Agent Platform'
+      const aiRes = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/${TARGET_MODEL}:generateContent?key=${encodeURIComponent(activeGoogleKey)}`,
+        {
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userContent }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+            responseMimeType: 'application/json'
+          }
         },
-        timeout: 60000
-      });
+        { timeout: 30000 }
+      );
 
-      const rawContent = aiRes.data?.choices?.[0]?.message?.content || '';
+      const rawContent = aiRes.data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
       let clean = rawContent.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
       clean = clean.replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, '');
 
       try {
         generatedTrack = JSON.parse(clean);
-        console.log(`[Orchestrator] Successfully generated track via Gemini 3.1 Pro!`);
+        console.log(`[Orchestrator] Successfully generated track via ${TARGET_MODEL}!`);
       } catch (parseErr) {
         console.warn(`[Orchestrator] Direct parse failed, repairing JSON...`);
         let repaired = clean;
@@ -687,7 +686,7 @@ ${activeScrapedData?.summary ? `Scraped Web Knowledge:\n${activeScrapedData.summ
         console.log(`[Orchestrator] JSON repaired successfully!`);
       }
     } catch (err) {
-      console.warn(`[Orchestrator] OpenRouter generation failed (${err.message}). Using Smart Curriculum Fallback.`);
+      console.warn(`[Orchestrator] AI generation notice (${err.message}). Using Smart Curriculum Fallback.`);
     }
   }
 

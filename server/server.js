@@ -10,10 +10,9 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 require('dotenv').config();
 
 // ============================================================================
-// 🔑 OPENROUTER API KEY & GEMINI AI MODEL
+// 🔑 HUGGING FACE & AI CONFIGURATION
 // ============================================================================
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const DEFAULT_AI_MODEL = "google/gemini-3.1-pro-preview"; // Google Gemini 3.1 Pro Preview Engine
+const DEFAULT_AI_MODEL = "black-forest-labs/FLUX.1-schnell";
 
 const { 
   initDatabase, 
@@ -1563,9 +1562,7 @@ CRITICAL RULES:
 4. Provide unique, engaging chapter names matching ${trackTitle}!`;
 
     // 1. Determine active API key
-    const activeApiKey = (OPENROUTER_API_KEY && OPENROUTER_API_KEY !== 'YOUR_OPENROUTER_API_KEY_HERE')
-      ? OPENROUTER_API_KEY
-      : (apiKey || process.env.OPENROUTER_API_KEY);
+    const activeApiKey = (apiKey || process.env.google_api_key || process.env.GOOGLE_API_KEY || '').trim();
 
     // 2. Invoke AI Multi-Agent Orchestrator (Domain Experts + Styling + QA Validation)
     const generatedTrack = await orchestrateTrackGeneration({
@@ -1636,13 +1633,1083 @@ app.delete('/api/custom-tracks/:id', async (req, res) => {
   }
 });
 
+// ============================================================================
+// 🎨🤖 WEB DEVELOPMENT TRACK: HUGGING FACE & AI AGENTS
+// ============================================================================
+const generatedAiImagesDir = path.join(__dirname, '..', 'public', 'generated_ai_images');
+if (!fs.existsSync(generatedAiImagesDir)) {
+  fs.mkdirSync(generatedAiImagesDir, { recursive: true });
+}
+app.use('/generated_ai_images', express.static(generatedAiImagesDir));
+
+function getActiveGeminiKeys() {
+  try {
+    require('dotenv').config({ path: path.join(__dirname, '..', '.env'), override: true });
+  } catch (e) {}
+  const googleKey = (
+    process.env.google_api_key ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.REACT_APP_GOOGLE_API_KEY ||
+    ''
+  ).trim();
+  const hfToken = (
+    process.env.hugin_facebook_app_id ||
+    process.env.HF_TOKEN ||
+    process.env.HUGGINGFACE_API_KEY ||
+    process.env.REACT_APP_HF_TOKEN ||
+    ''
+  ).trim();
+  return { googleKey, hfToken };
+}
+
+async function translateHebrewPromptToEnglish(userRequest, isLogoRequest = false, brandName = 'MySite', topic = '') {
+  const raw = String(userRequest || '').trim();
+  if (!raw) {
+    return isLogoRequest
+      ? `Modern minimalist vector brand logo emblem for ${brandName}, clean flat graphic design, studio lighting`
+      : 'Professional modern website hero photography, high resolution, ultra detailed, 8k';
+  }
+
+  // Strip conversational Hebrew prefixes ("צור לי תמונה של...", "תיצור לי תמונה של...", "תמונה של...")
+  let cleanCore = raw
+    .replace(/^(?:היי\s+|שלום\s+|בבקשה\s+)?(?:תיצור|צור|תייצר|ייצר|צייר|תצייר|תכין|הכן|תביא|הצג|תעשה|עשה)\s+(?:לי\s+|לנו\s+|עבורי\s+)?(?:בבקשה\s+)?(?:תמונה|איור|ציור|צילום|רקע|באנר|לוגו|סמל)?\s*(?:יפה\s+|מגניבה\s+|מקצועית\s+|אמיתית\s+|מגרה\s+)?(?:של\s+|עבור\s+|ל-?\s*)?/i, '')
+    .replace(/^(?:תמונה|איור|ציור|צילום|רקע|באנר)\s+(?:יפה\s+|מגניבה\s+|מקצועית\s+)?(?:של\s+|עבור\s+)?/i, '')
+    .trim();
+
+  if (!cleanCore) cleanCore = raw;
+
+  let translatedCore = cleanCore;
+
+  // Layer 1: MyMemory Free Translation API (server-friendly, no 429 block, no API key required)
+  if (/[\u0590-\u05FF]/.test(translatedCore)) {
+    try {
+      const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanCore)}&langpair=he|en`;
+      const mmRes = await axios.get(mmUrl, { timeout: 4500 });
+      const mmText = (mmRes.data?.responseData?.translatedText || '').trim();
+      if (mmText && !/[\u0590-\u05FF]/.test(mmText) && !mmText.includes('MYMEMORY WARNING')) {
+        translatedCore = mmText;
+      }
+    } catch (err) {}
+  }
+
+  // Layer 2: Fast Free Gemini Lite models (gemini-3.5-flash-lite / gemini-flash-lite-latest)
+  if (/[\u0590-\u05FF]/.test(translatedCore)) {
+    const { googleKey } = getActiveGeminiKeys();
+    if (googleKey) {
+      for (const gm of ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite']) {
+        if (!/[\u0590-\u05FF]/.test(translatedCore)) break;
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${gm}:generateContent?key=${encodeURIComponent(googleKey)}`;
+          const res = await axios.post(
+            url,
+            {
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    {
+                      text: `Translate this Hebrew image description to English (output ONLY the English translation, nothing else): "${cleanCore}"`
+                    }
+                  ]
+                }
+              ],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 100 }
+            },
+            { timeout: 5000 }
+          );
+          const gText = res.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (gText && !/[\u0590-\u05FF]/.test(gText)) {
+            translatedCore = gText.replace(/^["']|["']$/g, '').trim();
+          }
+        } catch (err) {}
+      }
+    }
+  }
+
+  // Layer 3: Google Translate with Browser User-Agent
+  if (/[\u0590-\u05FF]/.test(translatedCore)) {
+    try {
+      const gtUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=en&dt=t&q=${encodeURIComponent(cleanCore)}`;
+      const gtRes = await axios.get(gtUrl, {
+        timeout: 4000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+        }
+      });
+      if (Array.isArray(gtRes.data?.[0])) {
+        const joined = gtRes.data[0].map((part) => part?.[0] || '').join('').trim();
+        if (joined && !/[\u0590-\u05FF]/.test(joined)) {
+          translatedCore = joined;
+        }
+      }
+    } catch (err) {}
+  }
+
+  // Layer 4: Built-in Hebrew-to-English visual dictionary (ensures Hebrew characters are NEVER sent to FLUX)
+  if (/[\u0590-\u05FF]/.test(translatedCore)) {
+    const dict = [
+      [/סלט ירקות/g, 'fresh vegetable salad'],
+      [/סלט/g, 'fresh salad'],
+      [/ירקות/g, 'fresh vegetables'],
+      [/עסיסי/g, 'juicy'],
+      [/מסעדות|מסעדה/g, 'gourmet restaurant'],
+      [/שווארמה/g, 'delicious middle eastern shawarma wrap'],
+      [/פלאפל/g, 'crispy falafel in pita'],
+      [/המבורגר|בורגר/g, 'juicy gourmet burger'],
+      [/פיצה/g, 'hot Italian pizza with melted cheese'],
+      [/גלידה/g, 'colorful artisan ice cream'],
+      [/עוגה|קינוח/g, 'sweet gourmet cake dessert'],
+      [/קפה/g, 'cup of artisan coffee'],
+      [/אוכל/g, 'delicious gourmet food'],
+      [/סניקרס|נעליים|נעלי ספורט/g, 'modern stylish sneakers shoes'],
+      [/אופנה|בגדים|חולצה/g, 'trendy fashion clothing'],
+      [/גיימינג|משחקי מחשב|קונסולה/g, 'neon RGB gaming setup room'],
+      [/מחשב/g, 'modern computer setup'],
+      [/רובוט/g, 'futuristic friendly robot'],
+      [/כלב|גור כלבים/g, 'cute happy dog puppy'],
+      [/חתול/g, 'cute fluffy cat'],
+      [/חיות מחמד|חיה/g, 'cute domestic pet animal'],
+      [/מכונית|רכב/g, ' sleek modern sports car'],
+      [/כדורגל|ספורט/g, 'soccer stadium sports action'],
+      [/טבע|נוף|ים|חוף/g, 'scenic nature landscape beach']
+    ];
+    let fallbackEn = translatedCore;
+    for (const [hebRegex, engWord] of dict) {
+      fallbackEn = fallbackEn.replace(hebRegex, ` ${engWord} `);
+    }
+    fallbackEn = fallbackEn.replace(/[\u0590-\u05FF]+/g, ' ').replace(/\s+/g, ' ').trim();
+    translatedCore = fallbackEn || 'modern commercial photography';
+  }
+
+  if (isLogoRequest) {
+    return `${translatedCore}, modern minimalist vector brand logo icon for "${brandName}", clean flat graphic design, studio lighting, high resolution`;
+  }
+  return `${translatedCore}, professional high resolution photography, ultra detailed, realistic natural lighting, sharp focus, 8k`;
+}
+
+// Upload image/file attachment from the Live AI Agent panel so images get clean URLs
+app.post('/api/web-track/upload-ai-asset', (req, res) => {
+  try {
+    const { fileName = 'asset.png', dataUrl = '' } = req.body || {};
+    const match = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) {
+      return res.status(400).json({ success: false, error: 'Invalid dataUrl' });
+    }
+    const mimeType = match[1];
+    const base64Data = match[2];
+    const ext = (fileName.split('.').pop() || 'png').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'png';
+    const safeName = `ai_upload_${Date.now()}_${Math.floor(Math.random() * 10000)}.${ext}`;
+    const targetPath = path.join(generatedAiImagesDir, safeName);
+    fs.writeFileSync(targetPath, Buffer.from(base64Data, 'base64'));
+    const hostBase = `${req.protocol}://${req.get('host')}`;
+    const publicUrl = `${hostBase}/generated_ai_images/${safeName}`;
+    return res.json({
+      success: true,
+      url: publicUrl,
+      mimeType,
+      fileName: safeName
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+async function callGeminiTextModel(systemPrompt, userPrompt, options = {}) {
+  const { googleKey, hfToken } = getActiveGeminiKeys();
+  const maxOutputTokens = options.maxOutputTokens || 2048;
+  const attachments = Array.isArray(options.attachments) ? options.attachments : [];
+  const history = Array.isArray(options.history) ? options.history.slice(-6) : [];
+
+  // 1. Try Hugging Face Inference Router with strongest Free Models (Qwen2.5-VL-72B / Qwen2.5-Coder-32B / DeepSeek-V3 / Llama-3.3-70B)
+  if (hfToken) {
+    const hasImageAttachment = attachments.some((a) => a.type === 'image' && a.dataUrl);
+    const hfModels = hasImageAttachment
+      ? ['Qwen/Qwen2.5-VL-72B-Instruct', 'meta-llama/Llama-3.2-90B-Vision-Instruct']
+      : [
+          'Qwen/Qwen2.5-Coder-32B-Instruct',
+          'deepseek-ai/DeepSeek-V3-0324',
+          'Qwen/Qwen2.5-72B-Instruct',
+          'meta-llama/Llama-3.3-70B-Instruct'
+        ];
+    for (const hfModel of hfModels) {
+      try {
+        const userContent = hasImageAttachment
+          ? [
+              { type: 'text', text: userPrompt },
+              ...attachments
+                .filter((a) => a.type === 'image' && a.dataUrl)
+                .map((img) => ({ type: 'image_url', image_url: { url: img.dataUrl } }))
+            ]
+          : userPrompt;
+
+        const hfMessages = [
+          { role: 'system', content: systemPrompt },
+          ...history
+            .filter((h) => h && (h.role === 'user' || h.role === 'assistant') && h.text)
+            .map((h) => ({
+              role: h.role,
+              content: String(h.text).slice(0, 1500)
+            })),
+          { role: 'user', content: userContent }
+        ];
+
+        const res = await axios.post(
+          'https://router.huggingface.co/v1/chat/completions',
+          {
+            model: hfModel,
+            messages: hfMessages,
+            temperature: 0.65,
+            max_tokens: Math.min(maxOutputTokens, 6144)
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${hfToken}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 15000
+          }
+        );
+        const text = res.data?.choices?.[0]?.message?.content?.trim();
+        if (text) {
+          console.log(`✅ [AI Agent] תשובה התקבלה ממודל: Hugging Face (${hfModel})`);
+          return { text, provider: `Hugging Face (${hfModel})` };
+        }
+      } catch (err) {}
+    }
+  }
+
+  // 2. Try Fast Multimodal Vision + Code Models (gemini-3.5-flash-lite / gemini-flash-lite-latest / gemini-3.5-flash)
+  if (googleKey) {
+    const fastModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.5-flash',
+      'gemini-2.5-flash'
+    ];
+
+    const userParts = [{ text: userPrompt }];
+    for (const att of attachments) {
+      if (att.type === 'image' && att.base64Data && att.mimeType) {
+        userParts.push({
+          inlineData: {
+            mimeType: att.mimeType,
+            data: att.base64Data
+          }
+        });
+      }
+    }
+
+    const geminiContents = [
+      ...history
+        .filter((h) => h && (h.role === 'user' || h.role === 'assistant') && h.text)
+        .map((h) => ({
+          role: h.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: String(h.text).slice(0, 1500) }]
+        })),
+      { role: 'user', parts: userParts }
+    ];
+
+    for (const gm of fastModels) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${gm}:generateContent?key=${encodeURIComponent(googleKey)}`;
+        const generationConfig = {
+          temperature: 0.65,
+          maxOutputTokens
+        };
+        if (gm.includes('2.5')) {
+          generationConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
+
+        const res = await axios.post(
+          url,
+          {
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents: geminiContents,
+            generationConfig
+          },
+          { timeout: 18000 }
+        );
+        const text = res.data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('\n').trim();
+        if (text) {
+          console.log(`✅ [AI Agent] תשובה התקבלה ממודל מהיר: ${gm}`);
+          return { text, provider: `Gemini (${gm})` };
+        }
+      } catch (err) {
+        console.warn(`[AI Agent] ${gm} notice:`, err.response?.data?.error?.message || err.message);
+      }
+    }
+  }
+
+  throw new Error('No AI response available');
+}
+
+function buildSmartLiveCodeFallback(prompt = '', currentCode = '', attachments = []) {
+  const reqText = String(prompt || '').trim();
+  const baseCode =
+    String(currentCode || '').trim() ||
+    `<body>\n  <h1>האתר שלי</h1>\n  <p>ברוכים הבאים לאתר שלי!</p>\n</body>\n\n<style>\n  body {\n    direction: rtl;\n    font-family: 'Segoe UI', sans-serif;\n    background: #0f172a;\n    color: #f8fafc;\n    padding: 24px;\n    text-align: center;\n  }\n</style>`;
+
+  // Check if user is asking a conversational question ("איך...", "מה...", "למה...")
+  const isPureQuestion =
+    /^(?:איך|מה|למה|מתי|איפה|האם|תסביר|אפשר הסבר|מה ההבדל)/i.test(reqText) &&
+    !/^(?:תוסיף|הוסף|תשנה|שנה|תתקן|תקן|תבנה|בנה|שים|תשים)/i.test(reqText);
+
+  if (isPureQuestion) {
+    if (/תמונת רקע|רקע.*תמונה|background-image/i.test(reqText)) {
+      return {
+        explanation: `כדי להוסיף תמונת רקע ל-\`div\` (או ל-\`header\`), מוסיפים ב-CSS בתוך תגית ה-\`<style>\` את המאפיין \`background-image\` יחד עם \`background-size: cover\`:\n\n\`\`\`css\n.my-box {\n  background-image: url('קישור-לתמונה.jpg');\n  background-size: cover;\n  background-position: center;\n  min-height: 300px;\n}\n\`\`\`\nאם תרצה שאוסיף את זה עבורך ישירות לקוד — פשוט כתוב לי "תוסיף תמונת רקע לחלק העליון"!`,
+        updatedCode: '',
+        provider: 'Smart Web Mentor'
+      };
+    }
+    return {
+      explanation: `שאלה מצוינת! ב-HTML ו-CSS אנחנו בונים את האלמנטים בתוך ה-\`<body>\` ומעצבים אותם בתוך ה-\`<style>\` לפי שם התגית או ה-\`class\`.\n\nאתה יכול לשאול אותי כל שאלה או לבקש ממני לבצע את השינוי ישירות בקוד שלך (ואפילו לצרף תמונה או קובץ בלחצן 📎)!`,
+      updatedCode: '',
+      provider: 'Smart Web Mentor'
+    };
+  }
+
+  let bodyInner = '';
+  let styleInner = '';
+  const bodyMatch = baseCode.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const styleMatch = baseCode.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+
+  if (bodyMatch) {
+    bodyInner = bodyMatch[1].trim();
+  } else {
+    bodyInner = baseCode.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '').trim();
+  }
+  if (styleMatch) {
+    styleInner = styleMatch[1].trim();
+  }
+
+  // Extract any image URL from attachments or from prompt text
+  const attachedImg = (attachments || []).find((a) => a.type === 'image' && (a.publicUrl || a.dataUrl));
+  const urlInTextMatch = reqText.match(/https?:\/\/[^\s"'<>]+/i);
+  const targetImgUrl = attachedImg?.publicUrl || attachedImg?.dataUrl || (urlInTextMatch ? urlInTextMatch[0] : '');
+
+  let explanation = 'עדכנתי ושדרגתי את הקוד שלך בלייב לפי הבקשה!';
+
+  if (targetImgUrl && /רקע|חלק הראשון|header|הדר|באנר/i.test(reqText)) {
+    explanation = 'הגדרתי את התמונה כתמונת רקע מרשימה בחלק העליון (header) של הדף עם התאמה מלאה!';
+    styleInner += `\n\n  header {\n    background-image: linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)), url('${targetImgUrl}');\n    background-size: cover;\n    background-position: center;\n    color: #ffffff;\n    padding: 60px 20px;\n    border-radius: 16px;\n    text-align: center;\n  }`;
+  } else if (targetImgUrl) {
+    explanation = 'שילבתי את התמונה שצירפת בתוך הדף בעיצוב מודרני!';
+    bodyInner += `\n\n  <div class="ai-image-showcase">\n    <img src="${targetImgUrl}" alt="תמונה באתר" />\n  </div>`;
+    styleInner += `\n\n  .ai-image-showcase img {\n    max-width: 100%;\n    width: 480px;\n    border-radius: 16px;\n    box-shadow: 0 12px 30px rgba(0,0,0,0.25);\n    margin: 20px auto;\n    display: block;\n  }`;
+  } else if (/ניווט|תפריט|navbar|הדר|header/i.test(reqText)) {
+    explanation = 'הוספתי תפריט ניווט עליון (Navbar) יוקרתי ומעוצב לראש הדף!';
+    bodyInner = `  <nav class="ai-navbar">\n    <div class="ai-logo">✨ האתר שלי</div>\n    <div class="ai-nav-links">\n      <a href="#home">ראשי</a>\n      <a href="#about">אודות</a>\n      <a href="#gallery">גלריה</a>\n      <a href="#contact">צור קשר</a>\n    </div>\n  </nav>\n\n${bodyInner}`;
+    styleInner += `\n\n  .ai-navbar {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    background: rgba(30, 41, 59, 0.9);\n    padding: 14px 24px;\n    border-radius: 14px;\n    margin-bottom: 24px;\n    box-shadow: 0 8px 24px rgba(0,0,0,0.2);\n  }\n  .ai-logo {\n    font-weight: 800;\n    font-size: 1.25rem;\n    color: #38bdf8;\n  }\n  .ai-nav-links {\n    display: flex;\n    gap: 18px;\n  }\n  .ai-nav-links a {\n    color: #e2e8f0;\n    text-decoration: none;\n    font-weight: 600;\n    transition: color 0.2s;\n  }\n  .ai-nav-links a:hover {\n    color: #38bdf8;\n  }`;
+  } else if (/כפתור|button/i.test(reqText)) {
+    explanation = 'הוספתי כפתור מעוצב עם אפקט ריחוף (Hover) אינטראקטיבי!';
+    bodyInner += `\n\n  <div style="margin: 20px 0;">\n    <button class="ai-action-btn" onclick="alert('שלום! לחצת על הכפתור 🚀')">לחץ כאן עכשיו 🚀</button>\n  </div>`;
+    styleInner += `\n\n  .ai-action-btn {\n    background: linear-gradient(135deg, #6366f1, #ec4899);\n    color: #ffffff;\n    border: none;\n    padding: 12px 28px;\n    border-radius: 999px;\n    font-size: 1.05rem;\n    font-weight: 800;\n    cursor: pointer;\n    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);\n    transition: transform 0.2s ease, box-shadow 0.2s ease;\n  }\n  .ai-action-btn:hover {\n    transform: translateY(-3px) scale(1.03);\n    box-shadow: 0 12px 28px rgba(236, 72, 153, 0.45);\n  }`;
+  } else if (/כרטיס|מוצר|גלרי|card/i.test(reqText)) {
+    explanation = 'הוספתי אזור כרטיסיות מעוצבות (Cards) עם אפקט תלת-ממדי בריחוף!';
+    bodyInner += `\n\n  <section class="ai-cards-grid">\n    <div class="ai-card">\n      <h3>🌟 כרטיסייה ראשונה</h3>\n      <p>תיאור קצר ומרשים של התוכן או המוצר הראשון באתר שלך.</p>\n      <button class="ai-card-btn">לפרטים נוספים</button>\n    </div>\n    <div class="ai-card">\n      <h3>🔥 כרטיסייה שנייה</h3>\n      <p>תיאור קצר ומרשים של התוכן או המוצר השני באתר שלך.</p>\n      <button class="ai-card-btn">לפרטים נוספים</button>\n    </div>\n  </section>`;
+    styleInner += `\n\n  .ai-cards-grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));\n    gap: 20px;\n    margin: 24px 0;\n  }\n  .ai-card {\n    background: rgba(30, 41, 59, 0.85);\n    border: 1px solid rgba(148, 163, 184, 0.2);\n    border-radius: 16px;\n    padding: 20px;\n    text-align: right;\n    box-shadow: 0 10px 25px rgba(0,0,0,0.18);\n    transition: transform 0.25s ease;\n  }\n  .ai-card:hover {\n    transform: translateY(-5px);\n  }\n  .ai-card-btn {\n    margin-top: 12px;\n    background: #38bdf8;\n    color: #0f172a;\n    border: none;\n    padding: 8px 16px;\n    border-radius: 8px;\n    font-weight: 700;\n    cursor: pointer;\n  }`;
+  } else {
+    explanation = 'שדרגתי את עיצוב ה-CSS של הדף והוספתי אזור תוכן מעוצב לפי הבקשה שלך!';
+    bodyInner += `\n\n  <section class="ai-highlight-box">\n    <h2>✨ ${reqText}</h2>\n    <p>אזור חדש שנוצר ועוצב אוטומטית על ידי סוכן ה-AI באתר שלך.</p>\n  </section>`;
+    styleInner += `\n\n  .ai-highlight-box {\n    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(16, 185, 129, 0.15));\n    border: 1px solid rgba(99, 102, 241, 0.35);\n    border-radius: 16px;\n    padding: 22px;\n    margin: 22px auto;\n    max-width: 680px;\n    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);\n  }`;
+  }
+
+  const updatedCode = `<body>\n${bodyInner}\n</body>\n\n<style>\n${styleInner}\n</style>`;
+  return { explanation, updatedCode, provider: 'Smart Live Code Agent' };
+}
+
+app.post('/api/web-track/ai-text', async (req, res) => {
+  try {
+    const { prompt = '', brandName = 'MySite', topic = 'אתר אינטרנט' } = req.body || {};
+    if (!prompt.trim()) {
+      return res.status(400).json({ success: false, error: 'נא להזין בקשה לסוכן הטקסט' });
+    }
+
+    console.log(`💬 [AI Text Request] שולח בקשה למודל טקסט עבור "${brandName}": "${prompt.trim()}"`);
+
+    const systemPrompt = `אתה מנטור AI ידידותי, קצר וקולע לתלמידים שבונים אתר אינטרנט ב-HTML ו-CSS.
+שם האתר של התלמיד: "${brandName}". נושא האתר: "${topic}".
+ענה תמיד בעברית ברורה, קצרה, מעשית ומעוצבת היטב (עד 8 שורות), עם דוגמאות קוד HTML/CSS קצרות שמוכנות להדבקה באתר.`;
+
+    const { text, provider } = await callGeminiTextModel(systemPrompt, prompt, {
+      maxOutputTokens: 1500
+    });
+    return res.json({ success: true, reply: text, provider });
+  } catch (err) {
+    console.error('[WebTrack AI Text Error]:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/web-track/ai-code-edit', async (req, res) => {
+  try {
+    const { prompt = '', currentCode = '', attachments = [], mode = 'auto' } = req.body || {};
+    if (!prompt.trim() && (!Array.isArray(attachments) || attachments.length === 0)) {
+      return res.status(400).json({ success: false, error: 'נא להזין הודעה או לצרף קובץ/תמונה לסוכן' });
+    }
+
+    console.log(
+      `🤖 [AI Live Agent] הודעה: "${prompt.trim()}" | קבצים מצורפים: ${Array.isArray(attachments) ? attachments.length : 0}`
+    );
+
+    const attachmentContextLines = [];
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      attachments.forEach((att, idx) => {
+        if (att.type === 'image') {
+          attachmentContextLines.push(
+            `תמונה מצורפת #${idx + 1} (${att.name || 'image'}): קישור לשימוש בקוד HTML/CSS (בתגית <img> או ב-background-image: url(...)): ${att.publicUrl || 'מצורפת כתמונה'}`
+          );
+        } else if (att.type === 'file' && att.textContent) {
+          attachmentContextLines.push(
+            `קובץ מצורף #${idx + 1} (${att.name || 'file'}):\n${String(att.textContent).slice(0, 6000)}`
+          );
+        }
+      });
+    }
+
+    const systemPrompt = `You are an interactive AI Web Development Mentor & Live Coding Agent (like Antigravity / Cursor) inside a student's HTML5 + CSS3 IDE.
+You can BOTH chat/answer questions in Hebrew AND edit/update the student's live code when requested, as well as inspect attached images and files.
+
+CRITICAL RULES:
+1. If the user is asking a question, asking "how do I..." (e.g. "איך אני מוסיף ל-div תמונת רקע?"), or chatting WITHOUT asking you to modify their project code right now (or if mode="${mode}" is "chat"):
+   - Answer clearly, warmly, and concisely in Hebrew (include a short HTML/CSS example snippet if helpful).
+   - Do NOT output ===CODE_START=== so their editor code remains untouched!
+2. If the user asks you to add, change, fix, style, build, or use an attached image/file/URL in their code (or if mode="${mode}" is "edit"):
+   - First, write 1-3 short, friendly sentences in Hebrew explaining what you changed or added.
+   - Then write the exact delimiter on a new line: ===CODE_START===
+   - After ===CODE_START===, output the COMPLETE updated code using clean <body>...</body> and <style>...</style> (and <script>...</script> if needed).
+   - Do NOT wrap the code after ===CODE_START=== in \`\`\`html fences.
+   - If the user provided an image URL (in text or in an attached image's URL) and asked for a background image, use background-image: url('THE_EXACT_URL'); background-size: cover; background-position: center; on the requested element/section!
+   - Always preserve existing parts of the user's code unless asked to replace them.`;
+
+    const userMessage = `הקוד הנוכחי בעורך:\n${currentCode || '<body>\n\n</body>\n<style>\n\n</style>'}${
+      attachmentContextLines.length > 0 ? `\n\nקבצים ותמונות שצורפו ע"י המשתמש:\n${attachmentContextLines.join('\n\n')}` : ''
+    }\n\nהודעת המשתמש:\n${prompt || 'נתח את הקובץ/התמונה שצירפתי ושלב או הסבר בהתאם.'}`;
+
+    try {
+      const { text, provider } = await callGeminiTextModel(systemPrompt, userMessage, {
+        maxOutputTokens: 4096,
+        attachments
+      });
+
+      let explanation = '';
+      let updatedCode = '';
+
+      if (text.includes('===CODE_START===')) {
+        const parts = text.split('===CODE_START===');
+        explanation = (parts[0] || '').trim() || 'הקוד עודכן בהצלחה בלייב בעורך!';
+        updatedCode = (parts[1] || '').replace(/===CODE_START===/g, '').replace(/===CODE_END===/g, '');
+      } else {
+        // Check if the user asked a question vs asked to edit
+        const isQuestionOnly =
+          mode === 'chat' ||
+          (/^(?:איך|מה|למה|מתי|איפה|האם|תסביר|אפשר הסבר|מה ההבדל)/i.test(prompt.trim()) &&
+            !/^(?:תוסיף|הוסף|תשנה|שנה|תתקן|תקן|תבנה|בנה|שים|תשים)/i.test(prompt.trim()));
+
+        if (isQuestionOnly) {
+          explanation = text.trim();
+          updatedCode = '';
+        } else {
+          const fenceMatch = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
+          if (fenceMatch && /<body|<style/i.test(fenceMatch[1])) {
+            updatedCode = fenceMatch[1];
+            explanation = text.replace(fenceMatch[0], '').trim() || 'הקוד עודכן בהצלחה בלייב בעורך!';
+          } else if (/^\s*<body/i.test(text)) {
+            updatedCode = text;
+            explanation = 'הקוד עודכן בהצלחה בלייב בעורך!';
+          } else {
+            explanation = text.trim();
+          }
+        }
+      }
+
+      updatedCode = updatedCode
+        .replace(/^```(?:html|css|javascript)?\s*/gi, '')
+        .replace(/```\s*$/gi, '')
+        .trim();
+
+      if (updatedCode || explanation) {
+        return res.json({
+          success: true,
+          explanation: explanation || 'הקוד עודכן בהצלחה בלייב בעורך!',
+          updatedCode,
+          provider
+        });
+      }
+    } catch (modelErr) {
+      console.warn('[WebTrack AI Code Edit] Falling back to Smart Live Code Engine:', modelErr.message);
+    }
+
+    const fallback = buildSmartLiveCodeFallback(prompt, currentCode, attachments);
+    return res.json({
+      success: true,
+      explanation: fallback.explanation,
+      updatedCode: fallback.updatedCode,
+      provider: fallback.provider
+    });
+  } catch (err) {
+    console.error('[WebTrack AI Code Edit Error]:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+async function generateHuggingFaceImage(englishPrompt) {
+  const { hfToken } = getActiveGeminiKeys();
+  const seed = Math.floor(Math.random() * 1000000);
+  const hfSpaces = [
+    {
+      label: 'Hugging Face (black-forest-labs/FLUX.1-dev)',
+      base: 'https://black-forest-labs-flux-1-dev.hf.space',
+      endpoint: '/gradio_api/call/infer',
+      payload: [englishPrompt, seed, true, 1024, 768, 3.5, 24]
+    },
+    {
+      label: 'Hugging Face (black-forest-labs/FLUX.1-schnell)',
+      base: 'https://black-forest-labs-flux-1-schnell.hf.space',
+      endpoint: '/gradio_api/call/infer',
+      payload: [englishPrompt, seed, true, 1024, 768, 4]
+    },
+    {
+      label: 'Hugging Face (multimodalart/FLUX.1-merged)',
+      base: 'https://multimodalart-flux-1-merged.hf.space',
+      endpoint: '/gradio_api/call/infer',
+      payload: [englishPrompt, seed, true, 1024, 768, 3.5, 8]
+    },
+    {
+      label: 'Hugging Face (stabilityai/stable-diffusion-3.5-large-turbo)',
+      base: 'https://stabilityai-stable-diffusion-3-5-large-turbo.hf.space',
+      endpoint: '/gradio_api/call/infer',
+      payload: [englishPrompt, '', seed, true, 1024, 768, 1.0, 4]
+    }
+  ];
+
+  const reqHeaders = { 'Content-Type': 'application/json' };
+  const getHeaders = {};
+  if (hfToken) {
+    reqHeaders.Authorization = `Bearer ${hfToken}`;
+    getHeaders.Authorization = `Bearer ${hfToken}`;
+  }
+
+  for (const space of hfSpaces) {
+    try {
+      console.log(
+        `🚀 [AI Image] פונה למודל: ${space.label} (${hfToken ? 'מאומת עם מפתח HF API' : 'ציבורי'})...`
+      );
+      const postRes = await axios.post(
+        `${space.base}${space.endpoint}`,
+        { data: space.payload },
+        { headers: reqHeaders, timeout: 12000 }
+      );
+      const eventId = postRes.data?.event_id;
+      if (!eventId) continue;
+
+      const sseRes = await axios.get(`${space.base}${space.endpoint}/${eventId}`, {
+        headers: getHeaders,
+        responseType: 'text',
+        timeout: 24000
+      });
+      const sseText = String(sseRes.data || '');
+      const urlMatch = sseText.match(/"url":\s*"([^"]+)"/);
+      if (urlMatch && urlMatch[1]) {
+        console.log(`✅ [AI Image] תמונה נוצרה בהצלחה ע"י ${space.label}!`);
+        console.log(`🔗 [AI Image URL]: ${urlMatch[1]}`);
+        return {
+          remoteUrl: urlMatch[1],
+          provider: `${space.label}${hfToken ? ' • HF API Key' : ''}`
+        };
+      }
+    } catch (err) {
+      console.warn(`⚠️ [WebTrack HF Space] ${space.label} notice:`, err.message);
+    }
+  }
+
+  return null;
+}
+
+app.post('/api/web-track/ai-image', async (req, res) => {
+  try {
+    const {
+      prompt = '',
+      brandName = 'MySite',
+      topic = '',
+      presetId = 'hero'
+    } = req.body || {};
+
+    const hostBase = `${req.protocol}://${req.get('host')}`;
+    const userRequest = (prompt || '').trim() || `תמונה מקצועית בנושא ${topic} עבור האתר ${brandName}`;
+    const isLogoRequest = presetId === 'logo' || userRequest.includes('לוגו') || userRequest.includes('סמל');
+
+    console.log(`\n🖼️ [AI Image Request] בקשה חדשה: "${userRequest}"`);
+
+    // 1. Instant Hebrew -> English translation for Hugging Face FLUX.1-schnell (no OpenRouter, no 22s delay)
+    const englishPrompt = await translateHebrewPromptToEnglish(
+      userRequest,
+      isLogoRequest,
+      brandName,
+      topic
+    );
+    console.log(`🌐 [AI Image Prompt Translated]: "${englishPrompt}"`);
+
+    // 2. Generate real image using Hugging Face models (FLUX.1-schnell / FLUX.1-merged / SD 3.5)
+    const hfResult = await generateHuggingFaceImage(englishPrompt);
+    if (hfResult) {
+      const finalUrl = hfResult.localFileName
+        ? `${hostBase}/generated_ai_images/${hfResult.localFileName}`
+        : hfResult.remoteUrl;
+      return res.json({
+        success: true,
+        url: finalUrl,
+        isHuggingFace: true,
+        englishPrompt,
+        provider: hfResult.provider
+      });
+    }
+
+    return res.json({
+      success: false,
+      error: 'לא התקבלה תמונה מ-Hugging Face'
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Alias route so legacy /api/web-track/generate-image callers also work seamlessly
+app.post('/api/web-track/generate-image', async (req, res) => {
+  try {
+    const { prompt = '', brandName = 'MySite', topic = '', presetId = 'hero' } = req.body || {};
+    const hostBase = `${req.protocol}://${req.get('host')}`;
+    const userRequest = (prompt || '').trim() || `תמונה מקצועית בנושא ${topic} עבור האתר ${brandName}`;
+    const isLogoRequest = presetId === 'logo' || userRequest.includes('לוגו') || userRequest.includes('סמל');
+    const englishPrompt = await translateHebrewPromptToEnglish(userRequest, isLogoRequest, brandName, topic);
+    const hfResult = await generateHuggingFaceImage(englishPrompt);
+    if (hfResult) {
+      const finalUrl = hfResult.localFileName
+        ? `${hostBase}/generated_ai_images/${hfResult.localFileName}`
+        : hfResult.remoteUrl;
+      return res.json({
+        success: true,
+        url: finalUrl,
+        imageUrl: finalUrl,
+        translatedPrompt: englishPrompt,
+        provider: hfResult.provider
+      });
+    }
+    return res.status(503).json({ success: false, error: 'לא התקבלה תמונה משרת ה-AI כרגע' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// 🚀 AI WEB BUILDER STUDIO (25-Session 100% Prompt-Driven Web Track)
+// Supports multi-turn history, multi-page context, X-Ray explain mode & Demo Day live publish
+// ============================================================================
+const publishedSitesDir = path.join(__dirname, '..', 'public', 'published_sites');
+if (!fs.existsSync(publishedSitesDir)) {
+  fs.mkdirSync(publishedSitesDir, { recursive: true });
+}
+app.use('/published_sites', express.static(publishedSitesDir));
+
+function buildStudioSmartFallback({ prompt = '', currentCode = '', activePage = 'index.html', brandName = 'המשחק שלי', topic = 'משחק ארקייד', mode = 'build', attachments = [] }) {
+  const reqText = String(prompt || '').trim();
+  if (mode === 'explain') {
+    return {
+      explanation: `🔍 **הצצה מאחורי הקלעים של "${brandName}":**\n\nהמשחק שלך בנוי מ-3 חלקים פשוטים:\n1. **עיצוב ומסכים (HTML + CSS):** מסך הפתיחה, לוח הניקוד, מסך הניצחון וכפתור "שחק שוב".\n2. **במת המשחק (Canvas):** האזור שבו הדמות, המכשולים, החלקיקים והרקע מצוירים ב-60 פריימים לשנייה.\n3. **מוח המשחק (JavaScript):** חוקי התנועה, התנגשויות, ניקוד, שעון זמן וצלילי Web Audio.\n\n💡 תוכל לעבור למצב **🎮 בנה ושדרג משחק** ולבקש כל שינוי או שדרוג שתרצה!`,
+      updatedCode: '',
+      provider: 'SmartStart AI Game Mentor'
+    };
+  }
+
+  const hasExistingGame = /<canvas|<script[\s\S]{300,}<\/script>/i.test(currentCode || '') && (currentCode || '').length > 500;
+  if (!hasExistingGame) {
+    const safeTitle = String(brandName || 'המשחק שלי').replace(/[<>"']/g, '');
+    const starterGame = `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${safeTitle}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: radial-gradient(circle at top, #1e1b4b, #090d16 70%); color: #f8fafc; overflow: hidden; user-select: none; }
+    .glass { background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); }
+    canvas { touch-action: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3">
+  <div class="w-full max-w-3xl flex flex-col gap-3">
+    <div class="glass rounded-2xl px-4 py-2.5 flex items-center justify-between text-sm font-bold shadow-xl">
+      <div class="flex items-center gap-3">
+        <span class="text-cyan-300 text-base font-black">🎮 ${safeTitle}</span>
+        <span id="hudScore" class="bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 px-3 py-1 rounded-full">ניקוד: 0</span>
+        <span id="hudBest" class="bg-amber-500/20 border border-amber-400/40 text-amber-200 px-3 py-1 rounded-full">🏆 שיא: 0</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="hudTime" class="bg-purple-500/20 border border-purple-400/40 text-purple-200 px-3 py-1 rounded-full">⏱️ 45 שנ׳</span>
+        <button id="muteBtn" onclick="toggleMute()" class="bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg cursor-pointer">🔊</button>
+      </div>
+    </div>
+
+    <div class="relative rounded-3xl overflow-hidden border border-cyan-400/30 shadow-[0_20px_60px_rgba(0,0,0,0.65)] bg-slate-950">
+      <canvas id="gameCanvas" width="800" height="460" class="w-full h-auto block"></canvas>
+
+      <div id="startOverlay" class="absolute inset-0 glass flex flex-col items-center justify-center text-center p-6">
+        <span class="px-4 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/40 text-cyan-300 text-xs font-extrabold mb-3">✨ משחק AI מקורי</span>
+        <h1 class="text-3xl sm:text-4xl font-black text-white mb-2">${safeTitle}</h1>
+        <p class="text-slate-300 text-sm sm:text-base max-w-md mb-6">זוזו בחיצים (או עכבר/אצבע), אספו כוכבי אנרגיה והתחמקו ממטאורים אדומים! שרדו 45 שניות או הגיעו ל-200 נקודות כדי לנצח!</p>
+        <button onclick="startGame()" class="px-8 py-3.5 rounded-2xl bg-gradient-to-l from-cyan-400 to-purple-500 text-slate-950 font-black text-lg shadow-[0_0_30px_rgba(34,211,238,0.45)] hover:scale-105 transition cursor-pointer">🚀 התחל משחק</button>
+      </div>
+
+      <div id="endOverlay" class="hidden absolute inset-0 glass flex flex-col items-center justify-center text-center p-6">
+        <div id="endEmoji" class="text-5xl mb-2">🏆</div>
+        <h2 id="endTitle" class="text-3xl sm:text-4xl font-black text-white mb-2">ניצחת!</h2>
+        <p id="endStats" class="text-cyan-200 text-lg font-bold mb-6"></p>
+        <button onclick="startGame()" class="px-8 py-3 rounded-2xl bg-gradient-to-l from-emerald-400 to-cyan-400 text-slate-950 font-black text-base hover:scale-105 transition cursor-pointer">🔄 שחק שוב</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let running = false, muted = false, score = 0, timeLeft = 45, lastTick = 0, shake = 0;
+    let bestScore = Number(localStorage.getItem('smartstart_game_best_${safeTitle.slice(0, 12)}') || 0);
+    document.getElementById('hudBest').textContent = '🏆 שיא: ' + bestScore;
+
+    const player = { x: 400, y: 380, r: 22, vx: 0, speed: 6.5 };
+    const keys = {};
+    let stars = [], meteors = [], particles = [];
+
+    function beep(freq, dur, type = 'sine') {
+      if (muted) return;
+      try {
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = type; o.frequency.value = freq; g.gain.value = 0.08;
+        o.connect(g); g.connect(ac.destination); o.start();
+        g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+        o.stop(ac.currentTime + dur);
+      } catch(e) {}
+    }
+    function toggleMute() { muted = !muted; document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊'; }
+
+    function spawnParticles(x, y, color, count = 14) {
+      for (let i = 0; i < count; i++) {
+        particles.push({ x, y, vx: (Math.random() - 0.5) * 7, vy: (Math.random() - 0.5) * 7, life: 1, color });
+      }
+    }
+
+    function startGame() {
+      running = true; score = 0; timeLeft = 45; shake = 0;
+      player.x = canvas.width / 2; stars = []; meteors = []; particles = [];
+      document.getElementById('startOverlay').classList.add('hidden');
+      document.getElementById('endOverlay').classList.add('hidden');
+      document.getElementById('hudScore').textContent = 'ניקוד: 0';
+      document.getElementById('hudTime').textContent = '⏱️ 45 שנ׳';
+      lastTick = performance.now();
+      beep(520, 0.12, 'triangle');
+      requestAnimationFrame(loop);
+    }
+
+    function finishGame(won) {
+      running = false;
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('smartstart_game_best_${safeTitle.slice(0, 12)}', bestScore);
+        document.getElementById('hudBest').textContent = '🏆 שיא: ' + bestScore;
+      }
+      document.getElementById('endEmoji').textContent = won ? '🏆🎉' : '💥';
+      document.getElementById('endTitle').textContent = won ? '🏆 ניצחת!' : 'נפסלת — נסה שוב!';
+      document.getElementById('endStats').textContent = 'ניקוד סופי: ' + score + ' | שיא אישי: ' + bestScore;
+      document.getElementById('endOverlay').classList.remove('hidden');
+      beep(won ? 760 : 180, 0.35, won ? 'triangle' : 'sawtooth');
+    }
+
+    function loop(now) {
+      if (!running) return;
+      const dt = Math.min((now - lastTick) / 1000, 0.05);
+      lastTick = now;
+      timeLeft -= dt;
+      document.getElementById('hudTime').textContent = '⏱️ ' + Math.max(0, Math.ceil(timeLeft)) + ' שנ׳';
+      if (timeLeft <= 0 || score >= 200) { finishGame(true); return; }
+
+      if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
+      if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+      player.x = Math.max(player.r, Math.min(canvas.width - player.r, player.x));
+
+      if (Math.random() < 0.045) stars.push({ x: Math.random() * (canvas.width - 40) + 20, y: -20, r: 13, vy: 3 + Math.random() * 2.5 });
+      if (Math.random() < 0.038) meteors.push({ x: Math.random() * (canvas.width - 40) + 20, y: -20, r: 17, vy: 3.6 + Math.random() * 3 });
+
+      ctx.save();
+      if (shake > 0) { ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); shake *= 0.85; }
+      ctx.fillStyle = '#070b14'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw glowing player
+      const pg = ctx.createRadialGradient(player.x, player.y, 4, player.x, player.y, player.r * 1.5);
+      pg.addColorStop(0, '#38bdf8'); pg.addColorStop(1, 'rgba(139,92,246,0)');
+      ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(player.x, player.y, player.r * 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2); ctx.fill();
+
+      stars = stars.filter(s => {
+        s.y += s.vy;
+        ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+        if (Math.hypot(s.x - player.x, s.y - player.y) < s.r + player.r) {
+          score += 15; document.getElementById('hudScore').textContent = 'ניקוד: ' + score;
+          spawnParticles(s.x, s.y, '#facc15', 14); beep(680, 0.09); return false;
+        }
+        return s.y < canvas.height + 30;
+      });
+
+      for (let i = meteors.length - 1; i >= 0; i--) {
+        const m = meteors[i]; m.y += m.vy;
+        ctx.fillStyle = '#f43f5e'; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+        if (Math.hypot(m.x - player.x, m.y - player.y) < m.r + player.r - 4) {
+          shake = 14; spawnParticles(player.x, player.y, '#f43f5e', 24); finishGame(false); ctx.restore(); return;
+        }
+        if (m.y > canvas.height + 30) meteors.splice(i, 1);
+      }
+
+      particles = particles.filter(p => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+        ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1; return p.life > 0;
+      });
+
+      ctx.restore();
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keyup', e => keys[e.key] = false);
+    canvas.addEventListener('pointermove', e => {
+      if (!running) return;
+      const rect = canvas.getBoundingClientRect();
+      player.x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    });
+  </script>
+</body>
+</html>`;
+    return {
+      explanation: `בניתי עבורך את גרסת הפתיחה המהירה והיפה של **"${safeTitle}"**! 🎮✨\nאפשר כבר לשחק מיד (עם החיצים או העכבר), וכל הזמן לשדרג אותו בפרומפטים נוספים — תוספת כוחות-על, בוס, צלילים, תמונות AI או שינוי חוקי המשחק!`,
+      updatedCode: starterGame,
+      provider: 'SmartStart AI Game Engine'
+    };
+  }
+
+  const fb = buildSmartLiveCodeFallback(reqText, currentCode, attachments);
+  return fb;
+}
+
+app.post('/api/ai-web-studio/chat', async (req, res) => {
+  try {
+    const {
+      prompt = '',
+      currentCode = '',
+      activePage = 'index.html',
+      allPageNames = ['index.html'],
+      brandName = 'המשחק שלי',
+      topic = 'משחק דפדפן',
+      sessionTitle = '',
+      mode = 'build', // 'build' | 'explain' | 'auto'
+      history = [],
+      attachments = []
+    } = req.body || {};
+
+    if (!prompt.trim() && (!Array.isArray(attachments) || attachments.length === 0)) {
+      return res.status(400).json({ success: false, error: 'נא לכתוב פרומפט או לצרף תמונה לסוכן ה-AI' });
+    }
+
+    console.log(`🎮 [AI Game Studio] page=${activePage} | mode=${mode} | game="${brandName}" | prompt="${prompt.trim().slice(0, 90)}"`);
+
+    const attachmentContextLines = [];
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      attachments.forEach((att, idx) => {
+        if (att.type === 'image') {
+          attachmentContextLines.push(
+            `תמונה מצורפת #${idx + 1} (${att.name || 'image'}): השתמש בכתובת המדויקת הזו בתוך המשחק (ב-Image() ב-Canvas, ב-<img> או ב-background-image): ${att.publicUrl || 'מצורפת כתמונה'}`
+          );
+        } else if (att.type === 'file' && att.textContent) {
+          attachmentContextLines.push(
+            `קובץ מצורף #${idx + 1} (${att.name || 'file'}):\n${String(att.textContent).slice(0, 6000)}`
+          );
+        }
+      });
+    }
+
+    const pagesListText = Array.isArray(allPageNames) && allPageNames.length > 0
+      ? allPageNames.join(', ')
+      : activePage;
+
+    const systemPrompt = `You are SmartStart AI Game Studio — an elite, ultra-creative Hebrew-first Indie Game & Web Developer helping students in a fun 90-minute AI Game Creation & Classroom Tournament Workshop!
+
+PROJECT CONTEXT:
+- Game / Project Name: "${brandName}"
+- Concept / Theme: "${topic}"
+- Active File: "${activePage}" (All files: ${pagesListText})
+${sessionTitle ? `- Context: "${sessionTitle}"` : ''}
+
+CRITICAL OPERATING MODES:
+1. If mode is "explain":
+   - Explain clearly, warmly, and simply in Hebrew how the game works or suggest cool upgrades (3-4 short bullets).
+   - Do NOT output ===CODE_START=== so the game stays untouched.
+
+2. If mode is "build" (or "auto"):
+   - First, write 2-3 enthusiastic, short sentences in Hebrew explaining what you built or upgraded, plus 1 fun upgrade idea they can try next!
+   - Then output on its own line: ===CODE_START===
+   - After ===CODE_START===, output a COMPLETE, self-contained, immediately playable HTML5 document (\`<!DOCTYPE html><html lang="he" dir="rtl">...</html>\`).
+   - NEVER wrap code after ===CODE_START=== in markdown \`\`\` fences.
+   - PREMIUM VISUAL QUALITY (GEMINI-CLASS CRAFT):
+     * Include Google Font \`Heebo\` and Tailwind CSS CDN (\`<script src="https://cdn.tailwindcss.com"></script>\`) so the UI, HUD, start screen, overlays, buttons, and victory/high-score screens look stunning, vibrant, modern, and glassmorphic!
+     * Use smooth 60fps \`requestAnimationFrame\` HTML5 Canvas (or rich interactive SVG/DOM/Three.js if requested), glowing effects, particle bursts, smooth animations, and responsive scaling so the game fits cleanly inside ANY viewport without awkward scrolling!
+   - TOURNAMENT-READY GAMEPLAY EXCELLENCE:
+     * Support WHATEVER winning/competition style the student chose:
+       - Clear Victory screen (\`🏆 ניצחת!\`) for win-goal / boss / escape / level games,
+       - Live survival countdown/stopwatch & best time record for survival games ("לשרוד בלי להיפסל"),
+       - High-Score countdown & Top-5 localStorage leaderboard for high-score games ("להגיע להכי הרבה נקודות")!
+     * Always include a clean Start Screen with 1-line Hebrew controls instructions ("זזים בחיצים..."), clear live HUD (score/timer/lives/high-score), and an instant "🔄 שחק שוב" button on Win/Game Over!
+     * Never use ugly browser \`alert()\` — use sleek in-game overlays and Toast badges!
+     * For sound effects, use crisp synthesized **Web Audio API** sounds (never broken external MP3s) with a working 🔊/🔇 mute button!
+   - PRESERVATION RULE: When the student ALREADY has a working game in "${activePage}", PRESERVE everything that works (visuals, controls, high scores, sounds, images) and apply their requested upgrade/fix cleanly without breaking gameplay!
+   - IMAGES: If an attached or AI-generated image URL is given, load and draw that EXACT URL seamlessly in the game (with clean fallback if image fails to load).`;
+
+    const userMessage = `הקוד הנוכחי במשחק ("${activePage}"):
+${currentCode && currentCode.trim() ? currentCode : '(קובץ חדש וריק — בנה משחק שלם, יפה ומהנה מאפס לפי בקשת התלמיד!)'}
+${attachmentContextLines.length > 0 ? `\nתמונות וקבצים שצורפו:\n${attachmentContextLines.join('\n\n')}` : ''}
+
+פרומפט התלמיד:
+${prompt || 'שלב את התמונה שצירפתי בצורה יפה בתוך המשחק!'}`;
+
+    try {
+      const { text, provider } = await callGeminiTextModel(systemPrompt, userMessage, {
+        maxOutputTokens: 8192,
+        attachments,
+        history
+      });
+
+      let explanation = '';
+      let updatedCode = '';
+
+      if (mode === 'explain') {
+        explanation = text.replace(/===CODE_START===[\s\S]*/g, '').trim();
+      } else if (text.includes('===CODE_START===')) {
+        const parts = text.split('===CODE_START===');
+        explanation = (parts[0] || '').trim() || `עדכנתי את העמוד ${activePage} בלייב לפי הפרומפט שלך! ✨`;
+        updatedCode = (parts[1] || '').replace(/===CODE_START===/g, '').replace(/===CODE_END===/g, '');
+      } else {
+        const fenceMatch = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
+        if (fenceMatch && /<!doctype|<html|<body|<style/i.test(fenceMatch[1])) {
+          updatedCode = fenceMatch[1];
+          explanation = text.replace(fenceMatch[0], '').trim() || `עדכנתי את העמוד ${activePage} בלייב! ✨`;
+        } else if (/^\s*(?:<!doctype|<html|<body)/i.test(text)) {
+          updatedCode = text;
+          explanation = `בניתי ועדכנתי את העמוד ${activePage} בלייב! ✨`;
+        } else {
+          explanation = text.trim();
+        }
+      }
+
+      updatedCode = updatedCode
+        .replace(/^```(?:html|css|javascript)?\s*/gi, '')
+        .replace(/```\s*$/gi, '')
+        .trim();
+
+      if (updatedCode || explanation) {
+        return res.json({
+          success: true,
+          explanation: explanation || `העמוד ${activePage} עודכן בהצלחה!`,
+          updatedCode,
+          provider
+        });
+      }
+    } catch (modelErr) {
+      console.warn('[AI Web Studio] Model fallback triggered:', modelErr.message);
+    }
+
+    const fallback = buildStudioSmartFallback({
+      prompt,
+      currentCode,
+      activePage,
+      brandName,
+      topic,
+      mode,
+      attachments
+    });
+
+    return res.json({
+      success: true,
+      explanation: fallback.explanation,
+      updatedCode: fallback.updatedCode,
+      provider: fallback.provider
+    });
+  } catch (err) {
+    console.error('[AI Web Studio Chat Error]:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Publish multi-page student website to a real shareable URL for Demo Day
+app.post('/api/ai-web-studio/publish', (req, res) => {
+  try {
+    const { brandName = 'mysite', studentName = 'student', pages = {} } = req.body || {};
+    const pageEntries = Object.entries(pages || {}).filter(([name, html]) => name && typeof html === 'string' && html.trim());
+    if (pageEntries.length === 0) {
+      return res.status(400).json({ success: false, error: 'אין עמודים לפרסום באתר' });
+    }
+
+    const rawSlug = `${brandName}-${studentName}`
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 32) || 'site';
+    const siteId = `${rawSlug}-${Date.now().toString(36)}`;
+    const siteDir = path.join(publishedSitesDir, siteId);
+    fs.mkdirSync(siteDir, { recursive: true });
+
+    let entryFile = 'index.html';
+    pageEntries.forEach(([rawName, htmlContent], idx) => {
+      const safeFile = path.basename(String(rawName)).replace(/[^a-zA-Z0-9._-]/g, '_') || `page${idx + 1}.html`;
+      const finalFile = safeFile.endsWith('.html') ? safeFile : `${safeFile}.html`;
+      if (idx === 0 && !pages['index.html']) {
+        entryFile = finalFile;
+      }
+      fs.writeFileSync(path.join(siteDir, finalFile), htmlContent, 'utf8');
+    });
+
+    const hostBase = `${req.protocol}://${req.get('host')}`;
+    const liveUrl = `${hostBase}/published_sites/${siteId}/${entryFile}`;
+    console.log(`🌐 [AI Web Studio Publish] אתר פורסם בהצלחה: ${liveUrl}`);
+    return res.json({
+      success: true,
+      siteId,
+      liveUrl,
+      pagesCount: pageEntries.length
+    });
+  } catch (err) {
+    console.error('[AI Web Studio Publish Error]:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Serve static React build files if present
 const buildDir = path.join(__dirname, '..', 'build');
 if (fs.existsSync(buildDir)) {
   app.use(express.static(buildDir));
   app.get('*', (req, res, next) => {
-    // Don't intercept API endpoints
-    if (req.path.startsWith('/compile') || req.path.startsWith('/upload') || req.path.startsWith('/ports') || req.path.startsWith('/send-code-email') || req.path.startsWith('/api')) {
+    // Don't intercept API or static asset endpoints
+    if (
+      req.path.startsWith('/compile') ||
+      req.path.startsWith('/upload') ||
+      req.path.startsWith('/ports') ||
+      req.path.startsWith('/send-code-email') ||
+      req.path.startsWith('/api') ||
+      req.path.startsWith('/published_sites') ||
+      req.path.startsWith('/generated_ai_images')
+    ) {
       return next();
     }
     res.sendFile(path.join(buildDir, 'index.html'));

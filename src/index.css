@@ -127,6 +127,21 @@ div[id^="blockly"],
   fill: #f8fafc !important;
 }
 
+.wb-block-preview-wrap .injectionDiv {
+  height: auto !important;
+  width: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+.wb-block-preview-wrap .blocklySvg {
+  position: static !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  fill: none !important;
+}
+
 /* 1. Integrated Studio Sidebar Panel */
 div.blocklyToolboxDiv,
 .blocklyToolboxDiv,
